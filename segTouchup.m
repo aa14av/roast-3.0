@@ -214,8 +214,8 @@ air_temp = air_temp & temp;
 % head. To avoid empty space outside the head, make sure the 2nd image (if
 % available) used for segmentation does not have empty space (e.g. Dixon
 % image from stroke data has empty space) % ANDY 2017-05-17
-load([dirname filesep baseFilename '_rmask.mat'],'holes_vol','eyes_vol','WMexclude_vol');
 
+load([dirname filesep baseFilename '_rmask.mat'],'holes_vol','eyes_vol','WMexclude_vol');
 % for exceptions in auto touchup
 
 % assign labels to tissues in this order: white,gray,csf,bone,skin,air

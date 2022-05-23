@@ -17,8 +17,8 @@ if isempty(T2)
 else
     baseFilename = [baseFilename '_T1andT2'];
 end
-a=load(fullfile(dirname,[baseFilename '_seg8.mat']),'image','tpm','Affine');
-tpm2mri = inv(a.image(1).mat)*inv(a.Affine)*a.tpm(1).mat;
+load([dirname filesep baseFilename '_seg8.mat'],'image','tpm','Affine');
+tpm2mri = inv(image(1).mat)*inv(Affine)*tpm(1).mat;
 % mapping landmarks from TPM to individual MRI % ANDY 2017-05-17
 
 landmarkInTPM = [61 139 98; % nasion

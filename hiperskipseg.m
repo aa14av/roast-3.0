@@ -58,11 +58,10 @@ if length(conductivities.electrode(:))==1
 end
 try
     [elecPara,~] = tdcslab_elecPreproc(subj,elecName,elecPara,day);
-    disp 'PRE-PLACE COMPLETE !'; logfile(logname,'PRE-PLACE COMPLETE !');
 catch
     logfile(logname,'PRE-PLACE FAILED ...');
-    disp 'PRE-PLACE FAILED ...'; return
 end
+logfile(logname,'PRE-PLACE COMPLETE !');
 injectCurrent = (cell2mat(recipe(2:2:end)))';
 configTxt = [];
 for i=1:length(elecName)
@@ -80,14 +79,13 @@ if ~exist(fullfile(dirname,[baseFilename '_' simTag '_mask_elec.nii']),'file')
     %     hdrInfo = tdcslab_ElecPlace(day,subj,subj,[],elecName,options,simTag);
     try
         hdrInfo = electrodePlacement(subj,subj,[],elecName,options,simTag);
-        disp 'PLACE COMPLETE !'; logfile(logname,'PLACEMENT COMPLETE !');
     catch
         logfile(logname,'PLACE FAILED ...');
-        disp 'PLACE FAILED ...'; return
     end
 else
     load(fullfile(dirname,[baseFilename '_header.mat']),'hdrInfo');
 end
+logfile(logname,'PLACEMENT COMPLETE !');
 if ~exist(fullfile(dirname,[baseFilename '_' simTag '.mat']),'file')
     % hdr = load_untouch_header_only(subj);
     % v2w = diag(ones(1,4));
@@ -96,16 +94,15 @@ if ~exist(fullfile(dirname,[baseFilename '_' simTag '.mat']),'file')
     % [node,elem,hdrInfo] = meshMYelec(s,subj,elec,gel,meshOpt,uniqueTag);
     try
         [node,elem,~] = meshByIso2mesh(s,subj,subj,[],meshOpt,hdrInfo,simTag);
-        disp 'MESH COMPLETE !'; logfile(logname,'MESH COMPLETE !');
     catch
         logfile(logname,'MESH FAILED ...');
-        disp 'MESH FAILED ...'; return
     end
 else
     load(fullfile(dirname,[baseFilename '_' simTag '.mat']),'node','elem')
 end
+logfile(logname,'MESH COMPLETE !');
 % if ~exist(fullfile(dirname,[baseFilename '_' simTag '_roastResult.mat']),'file')
-    try prepareForGetDP(subj,node,elem,elecName,simTag); logfile(logname,'PREPARE COMPLETE !'); catch; logfile(logname,'PREPARE FAILED ...'); end
+    try prepareForGetDP(subj,node,elem,elecName,6,simTag); logfile(logname,'PREPARE COMPLETE !'); catch; logfile(logname,'PREPARE FAILED ...'); end
     try solveByGetDP(subj,injectCurrent,conductivities,1:length(elecName),simTag,[]); logfile(logname,'SOLVE COMPLETE !'); catch; logfile(logname,'SOLVE FAILED ...'); end
     try postGetDP(subj,subj,node,hdrInfo,simTag); logfile(logname,'BOOM, ROASTED !!!'); catch; logfile(logname,'POST FAILED ...'); end
 % else

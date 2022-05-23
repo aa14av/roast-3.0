@@ -1,4 +1,4 @@
-function [coord, corner] = drawCuboid(center,dim,longAxis,shortAxis,normalAxis,density)
+function coord = drawCuboid(center,dim,longAxis,shortAxis,normalAxis,density)
 % coord = drawCuboid(center,dim,longAxis,shortAxis,normalAxis,density)
 % 
 % Generate a point cloud of a cuboid.

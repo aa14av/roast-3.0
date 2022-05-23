@@ -1,4 +1,4 @@
-function hdrInfo = electrodePlacement(P1,P2,T2,elecNeeded,options,uniTag)
+function hdrInfo = electrodePlacement(P1,P2,T2,elecNeeded,cond,options,uniTag)
 % hdrInfo = electrodePlacement(P1,P2,T2,elecNeeded,options,uniTag)
 %
 % Place electrodes on the scalp surface. options.elecPara contains all the options
@@ -38,7 +38,8 @@ hdrInfo = struct('pixdim',pixdim,'dim',dim,'v2w',v2w);
 % keep the header info for use later
 % scalp_original = template.img==5;
 % scalp = changeOrientationVolume(scalp_original,perm,isFlipInner);
-scalp = template.img==5;
+tis = fieldnames(cond); nTis = max(template.img(:));
+scalp = template.img==cond.index(contains(tis(1:nTis),'skin'));
 
 if ~isempty(indP) || ~isempty(indN)
 %     landmarks = changeOrientationPointCloud(landmarks_original,perm,isFlipInner,size(scalp));
@@ -71,14 +72,15 @@ if ~isempty(indC)
 end
 
 scalp_surface = mask2EdgePointCloud(scalp,'erode',ones(3,3,3));
+
 %% fit cap position on the individual's head
 if ~isempty(indP)
    switch lower(elecPara(1).capType)
-       case {'1020','1010','1005'} 
+       case {'1020','1010','1005'}
            load('./cap1005FullWithExtra.mat','capInfo');
-           isBiosemi = 0; 
-           isEGI = 0; 
-       case 'biosemi' 
+           isBiosemi = 0;
+           isEGI = 0;
+       case 'biosemi'
            load('./capBioSemiFullWithExtra.mat','capInfo');
            isBiosemi = 1;
            isEGI = 0;
@@ -89,7 +91,7 @@ if ~isempty(indP)
    end
    [electrode_coord_P,center_P]= fitCap2individual(scalp,scalp_surface,landmarks,P2,capInfo,indP,isBiosemi,isEGI);
 else
-    electrode_coord_P = []; center_P = []; 
+    electrode_coord_P = []; center_P = [];
 end
 
 if ~isempty(indN)
@@ -103,11 +105,12 @@ else
 end
 
 if ~isempty(indC)
-    [~,indOnScalpSurf] = map2Points(elecLoc_C,scalp_surface,'closest'); 
-    electrode_coord_C = scalp_surface(indOnScalpSurf,:); 
+    [~,indOnScalpSurf] = map2Points(elecLoc_C,scalp_surface,'closest');
+    electrode_coord_C = scalp_surface(indOnScalpSurf,:);
 else
     electrode_coord_C = [];
 end
+
 %% head clean up for placing electrodes
 [scalp_clean,scalp_filled] = cleanScalp(scalp,scalp_surface);
 temp1 = scalp_filled(:,:,[1 end]);
@@ -157,11 +160,13 @@ electrode_coord = cat(1,electrode_coord_P,electrode_coord_N,electrode_coord_C);
 % electrode_center = cat(1,repmat(center_P,size(electrode_coord_P,1),1),...
 %     repmat(center_N,size(electrode_coord_N,1),1),repmat(center_C,size(electrode_coord_C,1),1));
 elec_range = cat(1,elec_range_P',elec_range_N',elec_range_C');
+
 %% placing and model the electrodes
 resolution = mean(pixdim);
 % mean() here to handle anisotropic resolution; ugly. Maybe just
 % resample MRI to isotropic in the very beginning?
 [elec_C,gel_C] = placeAndModelElectrodes(electrode_coord,elec_range,scalp_clean_surface,scalp_filled,elecNeeded,elecPara,resolution,1,uniTag);
+
 %% generate final results (elec and gel masks, and their coordinate ranges)
 disp('constructing electrode and gel volume to be exported...')
 % for i = 1:length(elec_C)
