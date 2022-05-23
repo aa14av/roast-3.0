@@ -1,23 +1,4 @@
-function roast(s,subj,recipe,varargin)
-% hiperoastrstart = tic;
-% if strcmp(montage,'F3-F4')
-%     recipe = {'F3', -2, 'F4', 2};
-% elseif strcmp(montage,'C3-Fp2')
-%     recipe = {'C3', 2, 'Fp2', -2};
-% elseif strcmp(montage,'HD-F4')
-%     recipe = {'F4', 2, 'Fp2',-.5, 'F8',-.5, 'C4',-.5, 'Fz',-.5};
-% elseif strcmp(montage,'HD-C3')
-%     recipe = {'C3', 2, 'C5', -.5, 'F3', -.5, 'Cz', -.5, 'P3', -.5};
-% elseif strcmp(montage,'custom')
-%     recipe = {'custom1',-2,'custom2',2};
-% end
-% if strcmp(montage,'HD-F4') || strcmp(montage,'HD-C3'); elecType = {'disc','disc','disc','disc','disc'}; else elecType = {'pad','pad'}; end
-% capType = '1020';
-% if strcmp(montage,'HD-F4') || strcmp(montage,'HD-C3'); elecSize = {[6 2],[6 2],[6 2],[6 2],[6 2]}; else elecSize = {[70 50 3],[70 50 3]}; end
-% doResamp = 0;
-% savetag = datestr(now,30);
-% logname = fullfile(fileparts(subj),['hiperoastr_' savetag '_log.txt']);
-% logfile(logname,'Beginning Hiperoastr');
+function roast(subj,recipe,varargin)
 % roast(subj,recipe,varargin)
 %
 % Main function of ROAST.
@@ -446,6 +427,7 @@ end
 
 if ~exist('T2','var')
     T2 = [];
+elseif isempty(T2); T2 = [];
 else
     if ~exist(T2,'file'), error(['The T2 MRI you provided ' T2 ' does not exist.']); end
     
@@ -539,10 +521,10 @@ if ~exist('conductivities','var')
                            'skin',0.465,'air',2.5e-14,'gel',0.3,'electrode',5.9e7); % literature values
 else
     if ~isstruct(conductivities), error('Unrecognized format of conductivity values. Please enter as a structure, with field names as ''white'', ''gray'', ''csf'', ''bone'', ''skin'', ''air'', ''gel'' and ''electrode''.'); end
-    conductivitiesNam = fieldnames(conductivities);
-    if isempty(conductivitiesNam) || ~all(ismember(conductivitiesNam,{'white';'gray';'csf';'bone';'skin';'air';'gel';'electrode'}))
-        error('Unrecognized tissue names detected. Supported tissue names in the conductivity option are ''white'', ''gray'', ''csf'', ''bone'', ''skin'', ''air'', ''gel'' and ''electrode''.');
-    end
+%     conductivitiesNam = fieldnames(conductivities);
+%     if isempty(conductivitiesNam) || ~all(ismember(conductivitiesNam,{'white';'gray';'csf';'bone';'skin';'air';'gel';'electrode'}))
+%         error('Unrecognized tissue names detected. Supported tissue names in the conductivity option are ''white'', ''gray'', ''csf'', ''bone'', ''skin'', ''air'', ''gel'' and ''electrode''.');
+%     end
     if ~isfield(conductivities,'white')
         conductivities.white = 0.126;
     else
@@ -832,7 +814,7 @@ if ~exist([dirname filesep baseFilename '_' uniqueTag '_mask_elec.nii'],'file')
     disp('======================================================')
     disp('      STEP 3 (out of 6): ELECTRODE PLACEMENT...       ')
     disp('======================================================')
-    hdrInfo = electrodePlacement(subj,subjRasRSPD,T2,elecName,options,uniqueTag);
+    hdrInfo = electrodePlacement(subj,subjRasRSPD,T2,elecName,conductivities,options,uniqueTag);
 else
     disp('======================================================')
     disp('         ELECTRODE ALREADY PLACED, SKIP STEP 3        ')
@@ -845,12 +827,12 @@ if ~exist([dirname filesep baseFilename '_' uniqueTag '.mat'],'file')
     disp('======================================================')
     disp('        STEP 4 (out of 6): MESH GENERATION...         ')
     disp('======================================================')
-    [node,elem,face] = meshByIso2mesh(s,subj,subjRasRSPD,T2,meshOpt,hdrInfo,uniqueTag);
+    [node,elem,face,numOfTissue] = meshByIso2mesh(1,subj,subjRasRSPD,T2,meshOpt,conductivities,hdrInfo,uniqueTag);
 else
     disp('======================================================')
     disp('          MESH ALREADY GENERATED, SKIP STEP 4         ')
     disp('======================================================')
-    load([dirname filesep baseFilename '_' uniqueTag '.mat'],'node','elem','face');
+    load([dirname filesep baseFilename '_' uniqueTag '.mat'],'node','elem','face','numOfTissue');
 end
 
 if any(~strcmpi(recipe,'leadfield'))
@@ -859,9 +841,9 @@ if any(~strcmpi(recipe,'leadfield'))
         disp('======================================================')
         disp('       STEP 5 (out of 6): SOLVING THE MODEL...        ')
         disp('======================================================')
-        prepareForGetDP(subj,node,elem,elecName,uniqueTag);
+        prepareForGetDP(subj,node,elem,elecName,numOfTissue,uniqueTag);
         indElecSolve = 1:length(elecName);
-        solveByGetDP(subj,injectCurrent,conductivities,indElecSolve,uniqueTag,'');
+        solveByGetDP(subj,injectCurrent,numOfTissue,conductivities,indElecSolve,uniqueTag,'');
     else
         disp('======================================================')
         disp('           MODEL ALREADY SOLVED, SKIP STEP 5          ')
@@ -873,14 +855,14 @@ if any(~strcmpi(recipe,'leadfield'))
         disp('======================================================')
         disp('STEP 6 (final step): SAVING AND VISUALIZING RESULTS...')
         disp('======================================================')
-        [vol_all,ef_mag,ef_all] = postGetDP(subj,subjRasRSPD,node,hdrInfo,uniqueTag);
-        try; visualizeRes(subj,subjRasRSPD,T2,node,elem,face,injectCurrent,hdrInfo,uniqueTag,0,vol_all,ef_mag,ef_all); end
+        [vol_all,ef_mag,ef_all] = postGetDP(subj,subjRasRSPD,node,hdrInfo,conductivities,uniqueTag);
+        visualizeRes(subj,subjRasRSPD,T2,node,elem,face,injectCurrent,hdrInfo,uniqueTag,0,vol_all,ef_mag,ef_all);
     else
         disp('======================================================')
         disp('  ALL STEPS DONE, LOADING RESULTS FOR VISUALIZATION   ')
         disp('======================================================')
         load([dirname filesep baseFilename '_' uniqueTag '_roastResult.mat'],'vol_all','ef_mag','ef_all');
-        try; visualizeRes(subj,subjRasRSPD,T2,node,elem,face,injectCurrent,hdrInfo,uniqueTag,1,vol_all,ef_mag,ef_all); end
+        visualizeRes(subj,subjRasRSPD,T2,node,elem,face,injectCurrent,hdrInfo,uniqueTag,1,vol_all,ef_mag,ef_all);
     end
     
 else
@@ -915,7 +897,7 @@ else
         disp('========================================================')
         disp('STEP 6 (final step): ASSEMBLING AND SAVING LEAD FIELD...')
         disp('========================================================')
-        postGetDP(subj,[],node,hdrInfo,uniqueTag,indStimElec,indInRoastCore(isInRoastCore));
+        postGetDP(subj,[],node,hdrInfo,conductivities,uniqueTag,indStimElec,indInRoastCore(isInRoastCore));
     else
         disp('======================================================')
         disp('         ALL STEPS DONE, READY TO DO TARGETING        ')

@@ -1,4 +1,4 @@
-function [vol_all,ef_mag,ef_all] = postGetDP(P1,P2,node,hdrInfo,uniTag,indSolved,indInCore)
+function [vol_all,ef_mag,ef_all] = postGetDP(P1,P2,node,hdrInfo,cond,uniTag,indSolved,indInCore)
 % [vol_all,ef_mag,ef_all] = postGetDP(P1,P2,node,hdrInfo,uniTag,indSolved,indInCore)
 %
 % Post processing after solving the model / generating the lead field.
@@ -38,7 +38,7 @@ if ~isempty(P2) % for roast()
     
     fid = fopen([dirname filesep baseFilename '_' uniTag '_e.pos']);
     fgetl(fid);
-    C = textscan(fid,'%d %f %f %f');
+    C = textscan(fid,'%d %f %f %f'); e = [double(C{1}) C{2} C{3} C{4}];
     fclose(fid);
     
     ef_all = zeros([hdrInfo.dim 3]);
@@ -54,59 +54,132 @@ if ~isempty(P2) % for roast()
     disp('saving the final results...')
     save([dirname filesep baseFilename '_' uniTag '_roastResult.mat'],'vol_all','ef_all','ef_mag','-v7.3');
     
-    if isempty(strfind(P2,'example/nyhead'))
-        template = load_untouch_nii(P2);
-    else
-        try
-            template = load_untouch_nii([dirname filesep baseFilenameRasRSPD '_T1orT2_masks.nii']);
-        catch
-            template = load_untouch_nii([dirname filesep baseFilenameRasRSPD '_T1andT2_masks.nii']);
-        end
-    end % Load the original MRI to save the results as NIFTI format
-    
+    template = load_untouch_nii([dirname filesep baseFilenameRasRSPD '_T1orT2_masks.nii']);
     template.hdr.dime.datatype = 16;
     template.hdr.dime.bitpix = 32;
     template.hdr.dime.scl_slope = 1; % so that display of NIFTI will not alter the data
     template.hdr.dime.cal_max = 0;
     template.hdr.dime.cal_min = 0;
-    
     template.img = single(vol_all);
     template.hdr.dime.glmax = max(vol_all(:));
     template.hdr.dime.glmin = min(vol_all(:));
     template.hdr.hist.descrip = 'voltage';
     template.fileprefix = [dirname filesep baseFilename '_' uniTag '_v'];
-    save_untouch_nii(template,[dirname filesep baseFilename '_' uniTag '_v.nii']);
+    save_untouch_nii(template,[dirname filesep baseFilename '_' uniTag '_v.nii']); 
+    clear template;
     
+    template = load_untouch_nii([dirname filesep baseFilenameRasRSPD '_T1orT2_masks.nii']);
+    template.hdr.dime.datatype = 16;
+    template.hdr.dime.bitpix = 32;
+    template.hdr.dime.scl_slope = 1; % so that display of NIFTI will not alter the data
+    template.hdr.dime.cal_max = 0;
+    template.hdr.dime.cal_min = 0;
     template.img = single(ef_mag);
     template.hdr.dime.glmax = max(ef_mag(:));
     template.hdr.dime.glmin = min(ef_mag(:));
     template.hdr.hist.descrip = 'EF mag';
     template.fileprefix = [dirname filesep baseFilename '_' uniTag '_emag'];
     save_untouch_nii(template,[dirname filesep baseFilename '_' uniTag '_emag.nii']);
+    clear template;
+    
+    template = load_untouch_nii([dirname filesep baseFilenameRasRSPD '_T1orT2_masks.nii']);
+    template.hdr.dime.datatype = 16;
+    template.hdr.dime.bitpix = 32;
+    template.hdr.dime.scl_slope = 1; % so that display of NIFTI will not alter the data
+    template.hdr.dime.cal_max = 0;
+    template.hdr.dime.cal_min = 0;
+    template.hdr.dime.dim(1) = 4;
+    template.hdr.dime.dim(5) = 3;
+    template.img = single(ef_all);
+    template.hdr.dime.glmax = max(ef_all(:));
+    template.hdr.dime.glmin = min(ef_all(:));
+    template.hdr.hist.descrip = 'EF';
+    template.fileprefix = [dirname filesep baseFilename '_' uniTag '_e'];
+    save_untouch_nii(template,[dirname filesep baseFilename '_' uniTag '_e.nii']);
+    clear template;
     
     % McCann et al 2019
-    gm_id = 2; gm_con = 0.276;
-    wm_id = 1; wm_con = 0.126;
-    csf_id = 3; csf_con = 1.65;
-    bone_id = 4; bone_con = 0.01;
-    skin_id = 5; skin_con = 0.465;
-    air_id = 6; air_con = 2.5e-14; % NOT ZERO!!
+%     gm_id = 2; gm_con = 0.276;
+%     wm_id = 1; wm_con = 0.126;
+%     csf_id = 3; csf_con = 1.65;
+%     bone_id = 4; bone_con = 0.01;
+%     skin_id = 5; skin_con = 0.465;
+%     air_id = 6; air_con = 2.5e-14; % NOT ZERO!!
     
-    try
-        am = load_nii([dirname filesep baseFilenameRasRSPD '_T1orT2_masks.nii']);
-    catch
-       am = load_nii([dirname filesep baseFilenameRasRSPD '_T1andT2_masks.nii']);
+    
+    % Compute J from Mesh
+    am = load_nii(fullfile(dirname,'T1_T1orT2_masks.nii'));
+    allMask_d = double(am.img); nTissue = max(allMask_d(:));
+    tisName = fieldnames(cond); tisName = tisName(1:nTissue);
+    for t = 1:length(tisName)
+        e(node(e(:,1),4)-0.5 == t,2:4) = e(node(e(:,1),4)-0.5 == t,2:4) .* cond.(tisName{t});
     end
-    allMask_d = double(am.img);
+    j_all = zeros([hdrInfo.dim 3]);
+    F = TriScatteredInterp(node(e(:,1),1:3), e(:,2));
+    j_all(:,:,:,1) = F(xi,yi,zi);
+    F = TriScatteredInterp(node(e(:,1),1:3), e(:,3));
+    j_all(:,:,:,2) = F(xi,yi,zi);
+    F = TriScatteredInterp(node(e(:,1),1:3), e(:,4));
+    j_all(:,:,:,3) = F(xi,yi,zi);
+    
+    j_mag = sqrt(sum(j_all.^2,4)); % Current Density Magnitude
+    
+    template = load_untouch_nii([dirname filesep baseFilenameRasRSPD '_T1orT2_masks.nii']);
+    template.hdr.dime.datatype = 16;
+    template.hdr.dime.bitpix = 32;
+    template.hdr.dime.scl_slope = 1; % so that display of NIFTI will not alter the data
+    template.hdr.dime.cal_max = 0;
+    template.hdr.dime.cal_min = 0;
+    template.img = single(j_mag);
+    template.hdr.dime.glmax = max(j_mag(:));
+    template.hdr.dime.glmin = min(j_mag(:));
+    template.hdr.hist.descrip = 'Jroast from mesh';
+    template.fileprefix = [dirname filesep baseFilename '_' uniTag '_Jroast'];
+    save_untouch_nii(template,[dirname filesep baseFilename '_' uniTag '_Jroast_II.nii']);
+    clear template;
+    
+    jbrain = zeros(size(j_mag));
+    jbrain(allMask_d == 1 | allMask_d == 2) = j_mag(allMask_d == 1 | allMask_d == 2);
+    j_all(repmat(allMask_d ~= 1 & allMask_d ~= 2,1,1,1,3)) = 0;
+    
+    template = load_untouch_nii([dirname filesep baseFilenameRasRSPD '_T1orT2_masks.nii']);
+    template.hdr.dime.datatype = 16;
+    template.hdr.dime.bitpix = 32;
+    template.hdr.dime.scl_slope = 1; % so that display of NIFTI will not alter the data
+    template.hdr.dime.cal_max = 0;
+    template.hdr.dime.cal_min = 0;
+    template.img = single(jbrain);
+    template.hdr.dime.glmax = max(jbrain(:));
+    template.hdr.dime.glmin = min(jbrain(:));
+    template.hdr.hist.descrip = 'Jbrain from mesh';
+    template.fileprefix = [dirname filesep baseFilename '_' uniTag '_Jbrain'];
+    save_untouch_nii(template,[dirname filesep baseFilename '_' uniTag '_Jbrain_II.nii']);
+    clear template;
+    
+    template = load_untouch_nii([dirname filesep baseFilenameRasRSPD '_T1orT2_masks.nii']);
+    template.hdr.dime.datatype = 16;
+    template.hdr.dime.bitpix = 32;
+    template.hdr.dime.scl_slope = 1; % so that display of NIFTI will not alter the data
+    template.hdr.dime.cal_max = 0;
+    template.hdr.dime.cal_min = 0;
+    template.img = single(j_all);
+    template.hdr.dime.glmax = max(j_all(:));
+    template.hdr.dime.glmin = min(j_all(:));
+    template.hdr.hist.descrip = 'xyzJbrain from mesh';
+    template.fileprefix = [dirname filesep baseFilename '_' uniTag '_xyzJbrain'];
+    save_untouch_nii(template,[dirname filesep baseFilename '_' uniTag '_xyzJbrain_II.nii']);
+    clear template;
     
     % Create Conductivity Masks
     allCond=zeros(size(ef_mag,1),size(ef_mag,2),size(ef_mag,3));
-    allCond(allMask_d(:,:,:)==gm_id) = gm_con;
-    allCond(allMask_d(:,:,:)==wm_id) = wm_con;
-    allCond(allMask_d(:,:,:)==csf_id) = csf_con;
-    allCond(allMask_d(:,:,:)==bone_id) = bone_con;
-    allCond(allMask_d(:,:,:)==skin_id) = skin_con;
-    allCond(allMask_d(:,:,:)==air_id) = air_con;
+    if ~isfield(cond,'index'); cond.index = 1:6; end
+    for t = 1:length(tisName); allCond(allMask_d(:,:,:)==cond.index(t)) = cond.(tisName{t}); end
+%     allCond(allMask_d(:,:,:)==gm_id) = gm_con;
+%     allCond(allMask_d(:,:,:)==wm_id) = wm_con;
+%     allCond(allMask_d(:,:,:)==csf_id) = csf_con;
+%     allCond(allMask_d(:,:,:)==bone_id) = bone_con;
+%     allCond(allMask_d(:,:,:)==skin_id) = skin_con;
+%     allCond(allMask_d(:,:,:)==air_id) = air_con;
     
     save([dirname filesep baseFilename '_allCond.mat'],'allCond');
     
@@ -120,34 +193,40 @@ if ~isempty(P2) % for roast()
     % make J nii
     Jroast(isnan(Jroast))=0;
     Jbrain = zeros(size(Jroast,1),size(Jroast,2),size(Jroast,3));
-    Jbrain(allMask_d == 1 | allMask_d == 2) = Jroast(allMask_d == 1 | allMask_d == 2);
+    if ~isfield(cond,'brain'); cond.brain = [1 1 0 0 0 0]; end
+    Jbrain(ismember(allMask_d,find(cond.brain))) = Jroast(ismember(allMask_d,find(cond.brain)));
     % save Jroast.mat Jroast
     % save_nii(J_nii_mod,'Jmap_mod.nii')
     save([dirname filesep baseFilename '_' uniTag '_Jbrain.mat'],'Jbrain');
     save([dirname filesep baseFilename '_' uniTag '_Jroast.mat'],'Jroast'); %baseFilename is T1 (nii file name without .nii)
     
+    template = load_untouch_nii([dirname filesep baseFilenameRasRSPD '_T1orT2_masks.nii']);
+    template.hdr.dime.datatype = 16;
+    template.hdr.dime.bitpix = 32;
+    template.hdr.dime.scl_slope = 1; % so that display of NIFTI will not alter the data
+    template.hdr.dime.cal_max = 0;
+    template.hdr.dime.cal_min = 0;
     template.img = single(Jroast);
     template.hdr.dime.glmax = max(Jroast(:));
     template.hdr.dime.glmin = min(Jroast(:));
     template.hdr.hist.descrip = 'Jroast';
     template.fileprefix = [dirname filesep baseFilename '_' uniTag '_Jroast'];
     save_untouch_nii(template,[dirname filesep baseFilename '_' uniTag '_Jroast.nii']);
+    clear template;
     
+    template = load_untouch_nii([dirname filesep baseFilenameRasRSPD '_T1orT2_masks.nii']);
+    template.hdr.dime.datatype = 16;
+    template.hdr.dime.bitpix = 32;
+    template.hdr.dime.scl_slope = 1; % so that display of NIFTI will not alter the data
+    template.hdr.dime.cal_max = 0;
+    template.hdr.dime.cal_min = 0;
     template.img = single(Jbrain);
     template.hdr.dime.glmax = max(Jbrain(:));
     template.hdr.dime.glmin = min(Jbrain(:));
     template.hdr.hist.descrip = 'Jbrain';
     template.fileprefix = [dirname filesep baseFilename '_' uniTag '_Jbrain'];
     save_untouch_nii(template,[dirname filesep baseFilename '_' uniTag '_Jbrain.nii']);
-    
-    template.hdr.dime.dim(1) = 4;
-    template.hdr.dime.dim(5) = 3;
-    template.img = single(ef_all);
-    template.hdr.dime.glmax = max(ef_all(:));
-    template.hdr.dime.glmin = min(ef_all(:));
-    template.hdr.hist.descrip = 'EF';
-    template.fileprefix = [dirname filesep baseFilename '_' uniTag '_e'];
-    save_untouch_nii(template,[dirname filesep baseFilename '_' uniTag '_e.nii']);
+    clear template;
     
     save([dirname filesep baseFilename '_EV.mat'],'vol_all','ef_all','ef_mag');    
     

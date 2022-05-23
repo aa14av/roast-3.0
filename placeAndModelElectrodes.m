@@ -1,4 +1,4 @@
-function [elec_allCoord,gel_allCoord,pad_corner] = placeAndModelElectrodes(elecLoc,elecRange,scalpCleanSurf,scalpFilled,elecPlacing,elecPara,res,isDebug,uniTag)
+function [elec_allCoord,gel_allCoord] = placeAndModelElectrodes(elecLoc,elecRange,scalpCleanSurf,scalpFilled,elecPlacing,elecPara,res,isDebug,uniTag)
 % [elec_allCoord,gel_allCoord] = placeAndModelElectrodes(elecLoc,elecRange,scalpCleanSurf,scalpFilled,elecPlacing,elecPara,res,isDebug,uniTag)
 % 
 % Place and generate the point cloud for each placed electrode and gel.
@@ -51,7 +51,6 @@ if isDebug
     plot3(scalpCleanSurf(:,1),scalpCleanSurf(:,2),scalpCleanSurf(:,3),'y.');
     hold on;
 end
-pad_corner = zeros(length(elecPara),3);
 elec_allCoord = cell(size(elecLoc,1),1); gel_allCoord = cell(size(elecLoc,1),1);
 % buffer for coordinates of each electrode and gel point
 for i = 1:length(elecPara) % size(elecLoc,1)    
@@ -105,7 +104,7 @@ for i = 1:length(elecPara) % size(elecLoc,1)
             
             %     startPt = elecLoc(i,:) + normal * dimTry/4;
             den = 2; % 2 points per pixel
-            [pad_coor pad_corner(i,:)] = drawCuboid(elecLoc(i,:),[pad_length pad_width dimTry],padOriLong,padOriShort,normal,den);
+            pad_coor = drawCuboid(elecLoc(i,:),[pad_length pad_width dimTry],padOriLong,padOriShort,normal,den);
             
             pad_coor = unique(round(pad_coor),'rows'); % clean-up of the coordinates
             

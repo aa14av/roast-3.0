@@ -1,4 +1,4 @@
-function prepareForGetDP(P,node,elem,elecNeeded,uniTag)
+function prepareForGetDP(P,node,elem,elecNeeded,numOfTissue,uniTag)
 % prepareForGetDP(P,node,elem,elecNeeded,uniTag)
 %
 % Prepare to solve in getDP
@@ -38,7 +38,7 @@ if isempty(dirname), dirname = pwd; end
 % 
 % save([dirname filesep baseFilename '_' uniTag '_elecMeshLabels.mat'],'label_elec','label_gel');
 
-numOfTissue = 6; % hard coded across ROAST.
+% numOfTissue = lenth(fieldnames(cond)); % hard coded across ROAST.
 numOfElec = length(elecNeeded);
 
 element_elecNeeded = cell(numOfElec,1);

@@ -1,4 +1,4 @@
-function [node,elem,face] = meshByIso2mesh(s,P1,P2,T2,opt,hdrInfo,uniTag)
+function [node,elem,face,numOfTissue] = meshByIso2mesh(s,P1,P2,T2,opt,cond,hdrInfo,uniTag)
 % [node,elem,face] = meshByIso2mesh(P1,P2,T2,opt,hdrInfo,uniTag)
 %
 % Generate volumetric tetrahedral mesh using iso2mesh toolbox
@@ -7,14 +7,12 @@ function [node,elem,face] = meshByIso2mesh(s,P1,P2,T2,opt,hdrInfo,uniTag)
 % (c) Yu (Andy) Huang, Parra Lab at CCNY
 % yhuang16@citymail.cuny.edu
 % October 2017
-
+% UPDATED BY ALEJANDRO ALBIZU ON 05/04/2021
 [dirname,baseFilename] = fileparts(P1);
 if isempty(dirname), dirname = pwd; end
 [~,baseFilenameRasRSPD] = fileparts(P2);
-if isempty(T2)
-    baseFilenameRasRSPD = [baseFilenameRasRSPD '_T1orT2'];
-else
-    baseFilenameRasRSPD = [baseFilenameRasRSPD '_T1andT2'];
+if isempty(T2); baseFilenameRasRSPD = [baseFilenameRasRSPD '_T1orT2'];
+else; baseFilenameRasRSPD = [baseFilenameRasRSPD '_T1andT2'];
 end
 
 mappingFile = [dirname filesep baseFilenameRasRSPD '_seg8.mat'];
@@ -29,7 +27,7 @@ end
 data = load_untouch_nii([dirname filesep baseFilenameRasRSPD '_masks.nii']);
 allMask = data.img;
 allMaskShow = data.img;
-numOfTissue = 6; % hard coded across ROAST.  max(allMask(:));
+numOfTissue = max(allMask(:)); % EDIT BY Alejandro Albizu 05/04/2021
 % data = load_untouch_nii([dirname filesep baseFilename '_' uniTag '_mask_gel.nii']);
 % allMask(data.img==255) = 7;
 % data = load_untouch_nii([dirname filesep baseFilename '_' uniTag '_mask_elec.nii']);
@@ -88,9 +86,9 @@ for i=1:3, node(:,i) = node(:,i)*hdrInfo.pixdim(i); end
 
 disp('saving mesh...')
 % maskName = {'WHITE','GRAY','CSF','BONE','SKIN','AIR','GEL','ELEC'};
-maskName = cell(1,numOfTissue+numOfGel+numOfElec);
-maskName(1:numOfTissue) = {'WHITE','GRAY','CSF','BONE','SKIN','AIR'};
+maskName = cell(1,numOfTissue+numOfGel+numOfElec); fields = fieldnames(cond)';
+maskName(1:numOfTissue) = fields(1:numOfTissue);% {'WHITE','GRAY','CSF','BONE','SKIN','AIR'};
 for i=1:numOfGel, maskName{numOfTissue+i} = ['GEL' num2str(i)]; end
 for i=1:numOfElec, maskName{numOfTissue+numOfGel+i} = ['ELEC' num2str(i)]; end
 savemsh(node(:,1:3),elem,[dirname filesep baseFilename '_' uniTag '.msh'],maskName);
-save([dirname filesep baseFilename '_' uniTag '.mat'],'node','elem','face');
+save([dirname filesep baseFilename '_' uniTag '.mat'],'node','elem','face','numOfTissue');

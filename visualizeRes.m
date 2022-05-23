@@ -51,7 +51,7 @@ end
 
 masks = load_untouch_nii([dirname filesep baseFilenameRasRSPD '_masks.nii']);
 allMask = masks.img;
-numOfTissue = 6; % hard coded across ROAST.  max(allMask(:));
+numOfTissue = max(allMask(:));
 if isRoast
     gel = load_untouch_nii([dirname filesep baseFilename '_' uniTag '_mask_gel.nii']);
     numOfGel = max(gel.img(:));

@@ -34,7 +34,6 @@ if ~isEGI
     indr2 = find(img_c(:,indc)>0,1,'last');
     img_c(indr1:indr2,indc) = 255;
     % Make sure the central sagittal slice can be closed completely in order to detect the edge correctly
-    
     se = 0;
     isFilled = 0;
     [ytemp,ztemp] = ind2sub(size(img_c),find(img_c));
@@ -62,7 +61,6 @@ if ~isEGI
     % along scalp surface using Natural Cubic Spline
     
     [bx,by,finalbreaks]=ncs2dapprox(r_c(index),c_c(index));
-    
     % Approximation of 2-D Data by Natural Cubic Spline
     % http://www.mathworks.co.jp/matlabcentral/fileexchange/7617
     t = finalbreaks';
