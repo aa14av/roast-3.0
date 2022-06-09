@@ -827,7 +827,7 @@ if ~exist([dirname filesep baseFilename '_' uniqueTag '.mat'],'file')
     disp('======================================================')
     disp('        STEP 4 (out of 6): MESH GENERATION...         ')
     disp('======================================================')
-    [node,elem,face,numOfTissue] = meshByIso2mesh(1,subj,subjRasRSPD,T2,meshOpt,conductivities,hdrInfo,uniqueTag);
+    [node,elem,face,numOfTissue] = meshByIso2mesh(1,subj,subjRasRSPD,T2,meshOpt,conductivities,hdrInfo);
 else
     disp('======================================================')
     disp('          MESH ALREADY GENERATED, SKIP STEP 4         ')
@@ -841,7 +841,7 @@ if any(~strcmpi(recipe,'leadfield'))
         disp('======================================================')
         disp('       STEP 5 (out of 6): SOLVING THE MODEL...        ')
         disp('======================================================')
-        prepareForGetDP(subj,node,elem,elecName,numOfTissue,uniqueTag);
+        prepareForGetDP(subj,node,elem,elecName,numOfTissue,conductivities,uniqueTag);
         indElecSolve = 1:length(elecName);
         solveByGetDP(subj,injectCurrent,numOfTissue,conductivities,indElecSolve,uniqueTag,'');
     else
@@ -855,7 +855,7 @@ if any(~strcmpi(recipe,'leadfield'))
         disp('======================================================')
         disp('STEP 6 (final step): SAVING AND VISUALIZING RESULTS...')
         disp('======================================================')
-        [vol_all,ef_mag,ef_all] = postGetDP(subj,subjRasRSPD,node,hdrInfo,conductivities,uniqueTag);
+        [vol_all,ef_mag,ef_all] = postGetDP(subj,subjRasRSPD,numOfTissue,node,conductivities,hdrInfo,uniqueTag,[],[]);
         visualizeRes(subj,subjRasRSPD,T2,node,elem,face,injectCurrent,hdrInfo,uniqueTag,0,vol_all,ef_mag,ef_all);
     else
         disp('======================================================')
