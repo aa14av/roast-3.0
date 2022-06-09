@@ -10,7 +10,7 @@ elecOri = 'lr';
 capType = '1020';
 paddingAmt = 0;
 doResamp = 0;
-simTag = 'MVPA';
+simTag = datestr(now,30);
 %=======================================
 
 indArg = 1;
@@ -22,11 +22,14 @@ while indArg <= length(varargin)
         case 'gel'
             gel = varargin{indArg+1};
             indArg = indArg+2;
+        case 'cond'
+            conductivities = varargin{indArg+1};
+            indArg = indArg+2;
         case 'unitag'
             simTag = varargin{indArg+1};
             indArg = indArg+2;
         otherwise
-            error('Supported options are: ''elec'', ''gel'', or ''uniTag''.');
+            error('Supported options are: ''elec'', ''gel'', ''cond'', or ''uniTag''.');
     end
 end
 if exist('elec','var') && ~exist('gel','var')
@@ -37,18 +40,20 @@ if exist('elec','var') && ~exist('gel','var')
         simTag = elec{1};
     end
 end
+if ~exist('cond','var')
+    conductivities = struct('white',0.126, 'gray',0.276,'csf',1.65,'bone',0.01, ...
+    'skin',0.465,'air',2.5e-14,'gel',0.3,'electrode',5.9e7); % ROAST Def
+% conductivities = struct('white',0.3835,'gray',0.1,'csf',1.8,'bone',0.0109,...
+%     'skin',0.43,'air',2.5e-14,'gel',0.3,'electrode',5.9e7); % Indahlastari2016
+% conductivities = struct('white',0.22, 'gray',0.47,'csf',1.71,'bone',0.02, ...
+%     'skin',0.41,'air',2.5e-14,'gel',0.3,'electrode',5.9e7); % McCann et al 2019
+end
 [dirname,baseFilename] = fileparts(subj);
 logname = fullfile(dirname,['hiperskipseg_' simTag '_log.txt']);
 elecName = (recipe(1:2:end-1))';
 elecPara = struct('capType',capType,'elecType',elecType,...
     'elecSize',elecSize,'elecOri',elecOri);
 meshOpt = struct('radbound',5,'angbound',30,'distbound',0.4,'reratio',3,'maxvol',10);
-% conductivities = struct('white',0.3835,'gray',0.1,'csf',1.8,'bone',0.0109,...
-%     'skin',0.43,'air',2.5e-14,'gel',0.3,'electrode',5.9e7); % Indahlastari2016
-conductivities = struct('white',0.126, 'gray',0.276,'csf',1.65,'bone',0.01, ...
-    'skin',0.465,'air',2.5e-14,'gel',0.3,'electrode',5.9e7); % ROAST Def
-% conductivities = struct('white',0.22, 'gray',0.47,'csf',1.71,'bone',0.02, ...
-%     'skin',0.41,'air',2.5e-14,'gel',0.3,'electrode',5.9e7); % McCann et al 2019
 
 if length(conductivities.gel(:))==1
     conductivities.gel = repmat(conductivities.gel,1,length(elecName));
@@ -84,6 +89,7 @@ if ~exist(fullfile(dirname,[baseFilename '_' simTag '_mask_elec.nii']),'file')
     end
 else
     load(fullfile(dirname,[baseFilename '_header.mat']),'hdrInfo');
+    simTag = hdrInfo.options.uniqueTag;
 end
 logfile(logname,'PLACEMENT COMPLETE !');
 if ~exist(fullfile(dirname,[baseFilename '_' simTag '.mat']),'file')
@@ -93,7 +99,7 @@ if ~exist(fullfile(dirname,[baseFilename '_' simTag '.mat']),'file')
     % hdrInfo = struct('pixdim',hdr.dime.pixdim(2:4),'dim',hdr.dime.dim(2:4),'v2w',v2w);
     % [node,elem,hdrInfo] = meshMYelec(s,subj,elec,gel,meshOpt,uniqueTag);
     try
-        [node,elem,~] = meshByIso2mesh(s,subj,subj,[],meshOpt,hdrInfo,simTag);
+        [node,elem,~] = meshByIso2mesh(s,subj,subj,[],meshOpt,conductivities,hdrInfo);
     catch
         logfile(logname,'MESH FAILED ...');
     end
@@ -102,9 +108,9 @@ else
 end
 logfile(logname,'MESH COMPLETE !');
 % if ~exist(fullfile(dirname,[baseFilename '_' simTag '_roastResult.mat']),'file')
-    try prepareForGetDP(subj,node,elem,elecName,6,simTag); logfile(logname,'PREPARE COMPLETE !'); catch; logfile(logname,'PREPARE FAILED ...'); end
+    try prepareForGetDP(subj,node,elem,elecName,conductivities,simTag); logfile(logname,'PREPARE COMPLETE !'); catch; logfile(logname,'PREPARE FAILED ...'); end
     try solveByGetDP(subj,injectCurrent,conductivities,1:length(elecName),simTag,[]); logfile(logname,'SOLVE COMPLETE !'); catch; logfile(logname,'SOLVE FAILED ...'); end
-    try postGetDP(subj,subj,node,hdrInfo,simTag); logfile(logname,'BOOM, ROASTED !!!'); catch; logfile(logname,'POST FAILED ...'); end
+    try postGetDP(subj,subj,node,conductivities,hdrInfo,simTag); logfile(logname,'BOOM, ROASTED !!!'); catch; logfile(logname,'POST FAILED ...'); end
 % else
 %     logfile(logname,'BOOM, ROASTED !!!');
 % end

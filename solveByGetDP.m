@@ -8,21 +8,24 @@ function solveByGetDP(P,current,numOfTissue,sigma,indUse,uniTag,LFtag)
 % yhuang16@citymail.cuny.edu
 % October 2017
 % August 2019 adding lead field
-
-% Updated by Alejandro Albizu for Inf Tissue Types on 03/04/2022
+% UPDATED BY AA 08/12/21 for >6 tissues
 
 [dirname,baseFilename] = fileparts(P);
 if isempty(dirname), dirname = pwd; end
 
 load([dirname filesep baseFilename '_' uniTag '_usedElecArea.mat'],'area_elecNeeded');
 
-tisName = fieldnames(sigma); tisName = tisName(1:numOfTissue);
+% numOfTissue = length(fieldnames(sigma))-2; % UPDATED BY AA 08/12/21
+maskName = fieldnames(sigma); maskName = maskName(1:numOfTissue);
+% numOfTissue = 6; % hard coded across ROAST.
 numOfElec = length(area_elecNeeded);
 
 fid = fopen([dirname filesep baseFilename '_' uniTag '.pro'],'w');
 
 fprintf(fid,'%s\n\n','Group {');
-for t = 1:numOfTissue; fprintf(fid,'%s\n',[tisName{t} ' = Region[' num2str(t) '];']); end
+for t = 1:numOfTissue
+    fprintf(fid,'%s\n',[maskName{t} ' = Region[' num2str(t) '];']);
+end
 % fprintf(fid,'%s\n','white = Region[1];');
 % fprintf(fid,'%s\n','gray = Region[2];');
 % fprintf(fid,'%s\n','csf = Region[3];');
@@ -38,7 +41,9 @@ for i=1:length(indUse)
     fprintf(fid,'%s\n',['elec' num2str(i) ' = Region[' num2str(numOfTissue+numOfElec+indUse(i)) '];']);
 end
 
-gelStr = []; elecStr = []; usedElecStr = [];
+gelStr = [];
+elecStr = [];
+usedElecStr = [];
 for i=1:length(indUse)
 %     fprintf(fid,'%s\n',['usedElec' num2str(i) ' = Region[' num2str(8+i) '];']);
     usedElecStr = [usedElecStr 'usedElec' num2str(i) ', '];
@@ -47,18 +52,20 @@ for i=1:length(indUse)
     elecStr = [elecStr 'elec' num2str(i) ', '];
 end
 
-tisList = strsplit(cell2mat(cellfun(@(x) [x ', -'],tisName,'uni',0)'),'-');
 % fprintf(fid,'%s\n','DomainC = Region[{white, gray, csf, bone, skin, air, gel, elec}];');
 % fprintf(fid,'%s\n\n',['AllDomain = Region[{white, gray, csf, bone, skin, air, gel, elec, ' usedElecStr(1:end-2) '}];']);
-% fprintf(fid,'%s\n',['DomainC = Region[{white, gray, csf, bone, skin, air, ' gelStr elecStr(1:end-2) '}];']);
-% fprintf(fid,'%s\n\n',['AllDomain = Region[{white, gray, csf, bone, skin, air, ' gelStr elecStr usedElecStr(1:end-2) '}];']);
-if length(tisList) ~= 6; tisList = [tisList{1:end}]; else; tisList = [tisList{:}]; end % FOR MORE THAN SIX TISSUES
-fprintf(fid,'%s\n',['DomainC = Region[{' tisList gelStr elecStr(1:end-2) '}];']);
-fprintf(fid,'%s\n\n',['AllDomain = Region[{' tisList gelStr elecStr usedElecStr(1:end-2) '}];']);
+
+% UPDATED BY AA 08/12/21
+maskStr = cellfun(@(x) [x ', '],maskName,'uni',0);
+fprintf(fid,'%s\n',['DomainC = Region[{' [maskStr{:}] gelStr elecStr(1:end-2) '}];']);
+fprintf(fid,'%s\n\n',['AllDomain = Region[{' [maskStr{:}] gelStr elecStr usedElecStr(1:end-2) '}];']);
 fprintf(fid,'%s\n\n','}');
 
+% UPDATED BY AA 08/12/21
 fprintf(fid,'%s\n\n','Function {');
-for t = 1:numOfTissue; fprintf(fid,'%s\n',['sigma[' tisName{t} '] = ' num2str(sigma.(tisName{t})) ';']); end
+for t = 1:numOfTissue
+    fprintf(fid,'%s\n',['sigma[' maskName{t} '] = ' num2str(sigma.(maskName{t})) ';']);
+end
 % fprintf(fid,'%s\n',['sigma[white] = ' num2str(sigma.white) ';']);
 % fprintf(fid,'%s\n',['sigma[gray] = ' num2str(sigma.gray) ';']);
 % fprintf(fid,'%s\n',['sigma[csf] = ' num2str(sigma.csf) ';']);
@@ -191,14 +198,13 @@ fprintf(fid,'%s\n','}');
 fclose(fid);
 
 str = computer('arch');
-filepath = fileparts(mfilename('fullpath'));
 switch str
     case 'win64'
-        solverPath = fullfile(filepath,'lib','getdp-3.2.0','bin','getdp.exe');
+        solverPath = 'Dependencies\roast-3.0\lib\getdp-3.2.0\bin\getdp.exe';
     case 'glnxa64'
-        solverPath = fullfile(filepath,'lib','getdp-3.2.0','bin','getdp');
+        solverPath = 'Dependencies/roast-3.0/lib/getdp-3.2.0/bin/getdp';
     case 'maci64'
-        solverPath = fullfile(filepath,'lib','getdp-3.2.0','bin','getdpMac');
+        solverPath = 'Dependencies/roast-3.0/lib/getdp-3.2.0/bin/getdpMac';
     otherwise
         error('Unsupported operating system!');
 end
@@ -215,7 +221,7 @@ end
 if status
     error(result)
 %     error('getDP solver cannot work properly on your system. Please check any error message you got.');
-else % after solving, delete intermediate files
-    %delete([dirname filesep baseFilename '_' uniTag '.pre']);
-    %delete([dirname filesep baseFilename '_' uniTag '.res']);
+% else % after solving, delete intermediate files
+%     delete([dirname filesep baseFilename '_' uniTag '_' LFtag '.pre']);
+%     delete([dirname filesep baseFilename '_' uniTag '_' LFtag '.res']);
 end
