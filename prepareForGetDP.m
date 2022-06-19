@@ -1,4 +1,4 @@
-function prepareForGetDP(P,node,elem,elecNeeded,numOfTissue,cond,uniTag)
+function prepareForGetDP(P,node,elem,elecNeeded,numOfTissue,uniTag)
 % prepareForGetDP(P,node,elem,elecNeeded,uniTag)
 %
 % Prepare to solve in getDP

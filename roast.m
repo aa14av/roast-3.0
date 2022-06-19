@@ -1,4 +1,4 @@
-function roast(subj,recipe,varargin)
+function roast(s,subj,recipe,varargin)
 % roast(subj,recipe,varargin)
 %
 % Main function of ROAST.
@@ -827,7 +827,7 @@ if ~exist([dirname filesep baseFilename '_' uniqueTag '.mat'],'file')
     disp('======================================================')
     disp('        STEP 4 (out of 6): MESH GENERATION...         ')
     disp('======================================================')
-    [node,elem,face,numOfTissue] = meshByIso2mesh(1,subj,subjRasRSPD,T2,meshOpt,conductivities,hdrInfo);
+    [node,elem,face,numOfTissue] = meshByIso2mesh(s,subj,subjRasRSPD,T2,meshOpt,conductivities,hdrInfo);
 else
     disp('======================================================')
     disp('          MESH ALREADY GENERATED, SKIP STEP 4         ')
@@ -841,7 +841,7 @@ if any(~strcmpi(recipe,'leadfield'))
         disp('======================================================')
         disp('       STEP 5 (out of 6): SOLVING THE MODEL...        ')
         disp('======================================================')
-        prepareForGetDP(subj,node,elem,elecName,numOfTissue,conductivities,uniqueTag);
+        prepareForGetDP(subj,node,elem,elecName,numOfTissue,uniqueTag);
         indElecSolve = 1:length(elecName);
         solveByGetDP(subj,injectCurrent,numOfTissue,conductivities,indElecSolve,uniqueTag,'');
     else

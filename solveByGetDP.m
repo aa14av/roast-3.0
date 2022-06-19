@@ -200,11 +200,11 @@ fclose(fid);
 str = computer('arch');
 switch str
     case 'win64'
-        solverPath = 'Dependencies\roast-3.0\lib\getdp-3.2.0\bin\getdp.exe';
+        solverPath = 'lib\getdp-3.2.0\bin\getdp.exe';
     case 'glnxa64'
-        solverPath = 'Dependencies/roast-3.0/lib/getdp-3.2.0/bin/getdp';
+        solverPath = 'lib/getdp-3.2.0/bin/getdp';
     case 'maci64'
-        solverPath = 'Dependencies/roast-3.0/lib/getdp-3.2.0/bin/getdpMac';
+        solverPath = 'lib/getdp-3.2.0/bin/getdpMac';
     otherwise
         error('Unsupported operating system!');
 end

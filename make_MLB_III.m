@@ -1,6 +1,8 @@
 function matlabbatch = make_MLB_III(dirname,estFile,writeFile)
 matlabbatch{1}.spm.spatial.normalise.estwrite.subj.vol = {fullfile(dirname,estFile)};
-matlabbatch{1}.spm.spatial.normalise.estwrite.subj.resample = {fullfile(dirname,[writeFile ',1'])};
+matlabbatch{1}.spm.spatial.normalise.estwrite.subj.resample = {fullfile(dirname,[writeFile ',1'])
+    fullfile(dirname,[writeFile ',2'])
+    fullfile(dirname,[writeFile ',3'])};
 matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.biasreg = 0.0001;
 matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.biasfwhm = 60;
 matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.tpm = {'/blue/camctrp/working/aprinda/freesurfer_output/tpm.nii'};
