@@ -810,6 +810,18 @@ else
     
 end
 
+if (isempty(T2) && exist([dirname filesep baseFilenameRasRSPD '_T1orT2_masks.nii'],'file')) ||...
+        (~isempty(T2) && exist([dirname filesep baseFilenameRasRSPD '_T1andT2_masks.nii'],'file'))
+    disp('======================================================')
+    disp('     STEP 2.5 (out of 6): FIXING CSF...       ')
+    disp('======================================================')
+    fix_csf(subjRasRSPD,T2,conductivities);
+else
+    disp('======================================================')
+    disp('    CSF FIX ALREADY DONE, SKIP STEP 2.5    ')
+    disp('======================================================')
+end
+
 if ~exist([dirname filesep baseFilename '_' uniqueTag '_mask_elec.nii'],'file')
     disp('======================================================')
     disp('      STEP 3 (out of 6): ELECTRODE PLACEMENT...       ')
@@ -844,6 +856,7 @@ if any(~strcmpi(recipe,'leadfield'))
         prepareForGetDP(subj,node,elem,elecName,numOfTissue,uniqueTag);
         indElecSolve = 1:length(elecName);
         solveByGetDP(subj,injectCurrent,numOfTissue,conductivities,indElecSolve,uniqueTag,'');
+%         solveByGetDP_6(subj,injectCurrent,conductivities,indElecSolve,uniqueTag,'')
     else
         disp('======================================================')
         disp('           MODEL ALREADY SOLVED, SKIP STEP 5          ')
