@@ -712,7 +712,7 @@ yhuang16@citymail.cuny.edu
 
 September 2019
 
-Adapted for >6 tissue types and CSF correction
+Adapted from https://github.com/andypotatohy/roast for >6 tissue types and CSF correction
 Alejandro Albizu, Center for Cognitive Aging and Memory at University of Florida
 aa14av@gmail.com
 August 2022
