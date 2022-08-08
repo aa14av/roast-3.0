@@ -1,73 +1,80 @@
-%% Place Electrodes on Manual Segmentation
+%% Run ROAST Manual Segmentation
 % Created by Alejandro Albizu on 02/02/2022
-% Last Updated: 06/07/2022 by AA
-clear
+% Last Updated: 08/08/2022 by AA
+clear % Clear Workspace
 
-% rootDir = '/Volumes/woodslab/ACT-head_models/FEM/manual_segmentation';
-% condDir = '/Volumes/camctrp/working/Alejandro/toolboxes/tDCSLAB-2.0/';
-%aprinda
-% rootDir = '/Volumes/projects/woodslab/ACT-head_models/FEM/manual_segmentation';
-% condDir = '/Volumes/working/Alejandro/toolboxes/tDCSLAB-2.0/';
+% Settings
+%--------------------------------
+rootDir = 'directory containing individual subject folder(s)';
+recipe = {}; % ROAST recipe (e.g. {'F3',-2,'F4',2})
+elecType = {}; % ROAST elecTypes (e.g. {'pad','pad'})
+elecSize = {}; % ROAST elecSizes (e.g. {[70 50 3],[70 50 3]})
+elecOri = {}; % ROAST elecOris (e.g. {'lr','lr'})
+simTag = 'unique tag for ROAST output file(s)';
+%--------------------------------
 
-rootDir = 'P:\WoodsLab\ACT-head_models\FEM\manual_segmentation\Education_Training';
-condDir = 'P:\WoodsLab\ACT-head_models\tDCSLAB-3.0';
-hrDir = 'W:\camctrp\working\Alejandro\ACT\headreco';
-dims = [256 256 256];
-mnames = flip({'wm','gm','eyes','csf','air','blood','cancellous','cortical','skin','fat','muscle'});
-idx = flip(1:11); % HARDCODED
-recipe = {'F3',-2,'F4',2};
-
-subfdr = dir(fullfile(rootDir,'FS*'));
+% Locate Subject Folders
+subfdr = dir(fullfile(rootDir,'sub*'));
 subnames = {subfdr.name}';
 
 tic
-missing = ones(length(subnames),1);
-% for s = 140:length(subnames)
+missing = ones(length(subnames),1); % Pre-allocate
 for s = 1:length(subnames)
-    subDir = fullfile(rootDir,subnames{s},'ROAST_11tis_Output_II');
-    if ~exist(subDir,'dir'); mkdir(subDir); end
+    subDir = fullfile(rootDir,subnames{s},'ROAST_Output');
+    T1 = 'absolute path to T1 nifti file';
+    condFile = 'absolute path to conductivity mat file';
+    segFile = 'absolute path to segmentation nifti file';
+    if ~exist(subDir,'dir'); mkdir(subDir); end % Create Output Folder 
     
-    if ~exist(fullfile(subDir,'T1_tDCSLAB_Jbrain.nii'),'file')
-        c = load(fullfile(condDir,'cond_11tis.mat'),'cond');
-        cond = cell2struct(c.cond(:,4),c.cond(:,3)); cond.gel = 1; cond.electrode = 2.5e7;
-        cond.index = cell2mat(c.cond(:,1)); cond.brain = cell2mat(c.cond(:,2));
+    if ~exist(fullfile(subDir,[baseFilename '_' simTag '_Jbrain.nii']),'file') % Check if ROAST is already completed
+        c = load(condFilename),'cond');
+        cond = cell2struct(c.cond(:,4),c.cond(:,3)); % convert to struct for ROAST
+        cond.gel = 1;                                                                   % HARDCODED GEL CONDUCTIVITY
+        cond.electrode = 2.5e7;                                                         % HARDCODED ELEC CONDUCTIVITY
+        cond.index = cell2mat(c.cond(:,1)); % Get Unique Tissue Indexes
+        cond.brain = cell2mat(c.cond(:,2)); % Boolean Index of Brain vs Non-brain
+
+        % Repeat Gel Conductivity for each electrode
         if length(cond.gel(:))==1
-            cond.gel = repmat(cond.gel,1,2); % HARDCODED for 2 electrodes        
+            cond.gel = repmat(cond.gel,1,length(elecSize));                                               
         end
+        
+        % Repeat Electrode Conductivity for each Electrode
         if length(cond.electrode(:))==1
-            cond.electrode = repmat(cond.electrode,1,2); % HARDCODED for 2 electrodes
+            cond.electrode = repmat(cond.electrode,1,length(elecSize));                               
         end
+        
+        % Copy T1 to ROAST Output Directory
+        if exist(T1,'file') &&...
+            ~exist(fullfile(subDir,'T1.nii'),'file')
+            copyfile(T1,fullfile(subDir,'T1.nii')); 
+        end 
+
+        % Copy Segmentation to ROAST Output Directory
+        if exist(segFile,'file') &&...
+            ~exist(fullfile(subDir,'T1_T1orT2_masks.nii'),'file')
+            copyfile(segFile,fullfile(subDir,'T1_T1orT2_masks.nii')); 
+        end
+        
+        % Run ROAST with specified settings (no need for T2 with manual seg)
         try
-            T1 = fullfile(subDir,'T1.nii');
-            copyfile(fullfile(fileparts(subDir),'T1.nii'),T1)
-            if ~exist(fullfile(fileparts(subDir),'T1_T1orT2_masks.nii'),'file')
-                copyfile(fullfile(fileparts(subDir),'T1_T1orT2_masks.nii'),fullfile(subDir,'T1_T1orT2_masks.nii'))
-            else
-            end
-%             copyfile(fullfile(fileparts(subDir),'ROAST_11tis_Output','T1_T1orT2_seg8.mat'),fullfile(subDir,'T1_T1orT2_seg8.mat'))
-%             copyfile(fullfile(fileparts(subDir),'ROAST_11tis_Output','T1_header.mat'),fullfile(subDir,'T1_header.mat'))
-%             copyfile(fullfile(fileparts(subDir),'ROAST_11tis_Output','T1_tDCSLAB_mask_elec.nii'),fullfile(subDir,'T1_tDCSLAB_mask_elec.nii'))
-%             copyfile(fullfile(fileparts(subDir),'ROAST_11tis_Output','T1_tDCSLAB_mask_gel.nii'),fullfile(subDir,'T1_tDCSLAB_mask_gel.nii'))
-%             if ~exist(fullfile(subDir,'c1T1_T1orT2.nii'),'file'); fid = fopen(fullfile(subDir,'c1T1_T1orT2.nii'),'w'); fprintf(fid,'temp'); end
-            try
-                roast(T1 ,recipe, ...
-                    'electype', {'pad','pad'}, ...
-                    'elecsize', {[70 50 3],[70 50 3]}, ...
-                    'elecOri', {'lr','lr'}, ...
-                    'conductivities',cond, ...
-                    'T2', [], 'simulationTag', 'tDCSLAB'); 
-                 missing(s) = 0; disp([subnames{s} ' Complete !'])
-                 close all;
-%                 if exist(fullfile(subDir,'c1T1_T1orT2.nii'),'file'); delete(fullfile(subDir,'c1T1_T1orT2.nii')); end
-            catch ME
-                delete(fullfile(subDir,'*')); % START OVER
-                warning(ME.message);
-            end
+            roast(fullfile(subDir,'T1.nii') ,recipe, ...
+                'electype', elecType, ...
+                'elecsize', elecSize, ...
+                'elecOri', elecOri, ...
+                'conductivities',cond, ...
+                'T2', [], 'simulationTag', simTag);
+             missing(s) = 0; % ROAST Complete
+             disp([subnames{s} ' Complete !']); % lmk when finished
+             close all; % Close ROAST figures
         catch ME
-            warning(ME.message)
+            delete(fullfile(subDir,'*')); % START OVER
+            warning(ME.message); % Print ROAST fail error
         end
+        
     else
-        missing(s) = 0;
+        missing(s) = 0; % ROAST already complete 
     end
+    
 end
 toc
