@@ -1,6 +1,11 @@
 %% Run ROAST Manual Segmentation
-% Created by Alejandro Albizu on 02/02/2022
-% Last Updated: 08/08/2022 by AA
+%====================================================
+% Created by: Alejandro Albizu for the Center for Cognitive Aging and Memory
+% University of Florida
+% Email: aa14av@gmail.com
+% Created: 02/02/2022
+% Updated: 08/08/2022
+%====================================================
 clear % Clear Workspace
 
 % Settings
