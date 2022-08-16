@@ -810,8 +810,8 @@ else
     
 end
 
-if (isempty(T2) && exist([dirname filesep baseFilenameRasRSPD '_T1orT2_masks.nii'],'file')) ||...
-        (~isempty(T2) && exist([dirname filesep baseFilenameRasRSPD '_T1andT2_masks.nii'],'file'))
+if (isempty(T2) && ~exist([dirname filesep baseFilenameRasRSPD '_T1orT2_masks_preCorr.nii'],'file')) ||...
+        (~isempty(T2) && ~exist([dirname filesep baseFilenameRasRSPD '_T1andT2_masks_preCorr.nii'],'file'))
     disp('======================================================')
     disp('     STEP 2.5 (out of 6): FIXING CSF...       ')
     disp('======================================================')
