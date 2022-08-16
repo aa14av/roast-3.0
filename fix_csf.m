@@ -29,7 +29,9 @@ else
     baseFilenameRasRSPD = [baseFilenameRasRSPD '_T1andT2'];
 end
 
-mnames = cond(:,3);
+% Get Tissue Names
+mnames = fieldnames(cond);
+mnames = mnames(1:end-4); % Remove Non-Tissue
 
 % Throw error if cannot locate gray matter label
 if sum(cellfun(@(x) sum(regexpi(x,'gm|gray|grey')),mnames,'uni',1)) == 0
@@ -53,6 +55,7 @@ end
 % Load Segmentations
 am = load_nii(fullfile(dirname,baseFilenameRasRSPD));
 save_nii(am,fullfile(dirname,[erase(baseFilenameRasRSPD,'.nii') '_preCorr.nii'])); % Save Old Segmentations
+
 masks = am.img;
 gm_mask = ismember(masks, [cond{cellfun(@(x) sum(regexpi(x,'gm|gray|grey')),mnames,'uni',1)~=0,1}]); % Get Gray Matter
 bone_mask = ismember(masks, [cond{cellfun(@(x) sum(regexpi(x,'bone|skull|cancellous|cortical')),mnames,'uni',1)~=0,1}]); % Get Combined Bone
