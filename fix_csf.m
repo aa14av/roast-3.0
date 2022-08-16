@@ -65,9 +65,9 @@ dil_bone = imdilate(bone_mask,ones(3,3,3)); % Dilate bone mask
 dil_bone(bone_mask) = 0; % Dilated portion of bone mask ONLY
 
 % Replace GM touching skull with csf
-if length([cond{cellfun(@(x) sum(regexpi(x,'csf|cerebrospinal')),mnames,'uni',1)~=0,1}])>1
+if length(cond.index(cellfun(@(x) sum(regexpi(x,'csf|cerebrospinal')),mnames,'uni',1)~=0,1))>1
     error(['Loacted ', ...
-        num2str(length([cond{cellfun(@(x) sum(regexpi(x,'csf|cerebrospinal')),mnames,'uni',1)~=0,1}])), ...
+        num2str(length(cond.index(cellfun(@(x) sum(regexpi(x,'csf|cerebrospinal')),mnames,'uni',1)~=0,1))), ...
         ' csf conductivities in ''condutivities'' variable, expected 1...'])
 end
 masks(gm_mask&dil_bone) = cond.index(cellfun(@(x) sum(regexpi(x,'csf|cerebrospinal')),mnames,'uni',1)~=0,1); % Replace GM touching Bone with CSF
