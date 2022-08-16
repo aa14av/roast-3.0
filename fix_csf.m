@@ -53,8 +53,8 @@ if sum(cellfun(@(x) sum(regexpi(x,'csf|cerebrospinal')),mnames,'uni',1)) == 0
 end
 
 % Load Segmentations
-am = load_nii(fullfile(dirname,baseFilenameRasRSPD));
-save_nii(am,fullfile(dirname,[erase(baseFilenameRasRSPD,'.nii') '_preCorr.nii'])); % Save Old Segmentations
+am = load_nii(fullfile(dirname,[baseFilenameRasRSPD '_masks.nii']));
+save_nii(am,fullfile(dirname,[erase(baseFilenameRasRSPD,'.nii') '_masks_preCorr.nii'])); % Save Old Segmentations
 
 masks = am.img;
 gm_mask = ismember(masks, [cond{cellfun(@(x) sum(regexpi(x,'gm|gray|grey')),mnames,'uni',1)~=0,1}]); % Get Gray Matter
