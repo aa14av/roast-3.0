@@ -57,8 +57,8 @@ am = load_nii(fullfile(dirname,[baseFilenameRasRSPD '_masks.nii']));
 save_nii(am,fullfile(dirname,[erase(baseFilenameRasRSPD,'.nii') '_masks_preCorr.nii'])); % Save Old Segmentations
 
 masks = am.img;
-gm_mask = ismember(masks, [cond{cellfun(@(x) sum(regexpi(x,'gm|gray|grey')),mnames,'uni',1)~=0,1}]); % Get Gray Matter
-bone_mask = ismember(masks, [cond{cellfun(@(x) sum(regexpi(x,'bone|skull|cancellous|cortical')),mnames,'uni',1)~=0,1}]); % Get Combined Bone
+gm_mask = ismember(masks, cond.index(cellfun(@(x) sum(regexpi(x,'gm|gray|grey')),mnames,'uni',1)~=0,1)); % Get Gray Matter
+bone_mask = ismember(masks, cond.index(cellfun(@(x) sum(regexpi(x,'bone|skull|cancellous|cortical')),mnames,'uni',1)~=0,1)); % Get Combined Bone
 
 % Locate GM/bone Intersection
 dil_bone = imdilate(bone_mask,ones(3,3,3)); % Dilate bone mask
@@ -70,7 +70,7 @@ if length([cond{cellfun(@(x) sum(regexpi(x,'csf|cerebrospinal')),mnames,'uni',1)
         num2str(length([cond{cellfun(@(x) sum(regexpi(x,'csf|cerebrospinal')),mnames,'uni',1)~=0,1}])), ...
         ' csf conductivities in ''condutivities'' variable, expected 1...'])
 end
-masks(gm_mask&dil_bone) = cond{cellfun(@(x) sum(regexpi(x,'csf|cerebrospinal')),mnames,'uni',1)~=0,1}; % Replace GM touching Bone with CSF
+masks(gm_mask&dil_bone) = cond.index(cellfun(@(x) sum(regexpi(x,'csf|cerebrospinal')),mnames,'uni',1)~=0,1); % Replace GM touching Bone with CSF
 
 nii = make_nii(masks); 
 nii.hdr = am.hdr;
