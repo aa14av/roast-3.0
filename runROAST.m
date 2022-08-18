@@ -32,7 +32,7 @@ for s = 1:length(subnames)
     if ~exist(subDir,'dir'); mkdir(subDir); end % Create Output Folder 
     
     if ~exist(fullfile(subDir,[baseFilename '_' simTag '_Jbrain.nii']),'file') % Check if ROAST is already completed
-        c = load(condFilename),'cond');
+        c = load(condFilename,'cond');
         cond = cell2struct(c.cond(:,4),c.cond(:,3)); % convert to struct for ROAST
         cond.gel = 1;                                                                   % HARDCODED GEL CONDUCTIVITY
         cond.electrode = 2.5e7;                                                         % HARDCODED ELEC CONDUCTIVITY
