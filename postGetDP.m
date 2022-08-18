@@ -122,7 +122,7 @@ if ~isempty(P2) % for roast()
     end
     
     Jroast = allCond.*ef_mag;
-    xyzJroast = repmat(allCond,[1 1 1 3]).*ef_all
+    xyzJroast = repmat(allCond,[1 1 1 3]).*ef_all; % HARDCODED
     
     % make J nii
     Jroast(isnan(Jroast))=0;
