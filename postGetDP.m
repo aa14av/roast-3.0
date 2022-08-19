@@ -126,7 +126,7 @@ if ~isempty(P2) % for roast()
     
     % make J nii
     Jroast(isnan(Jroast))=0;
-    brain = ismember(allMask_d,cond{:,cond{:,3},1});
+    brain = ismember(allMask_d,cond.index(cond.brain==1));
     Jbrain = zeros(size(Jroast,1),size(Jroast,2),size(Jroast,3));
     Jbrain(brain) = Jroast(brain);
     xyzJbrain = zeros(size(Jroast,1),size(Jroast,2),size(Jroast,3),3);
