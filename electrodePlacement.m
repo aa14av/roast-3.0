@@ -1,4 +1,4 @@
-function hdrInfo = electrodePlacement(P1,P2,T2,elecNeeded,cond,options,uniTag)
+function hdrInfo = electrodePlacement(P1,P2,T2,elecNeeded,options,uniTag)
 % hdrInfo = electrodePlacement(P1,P2,T2,elecNeeded,options,uniTag)
 %
 % Place electrodes on the scalp surface. options.elecPara contains all the options
@@ -7,7 +7,6 @@ function hdrInfo = electrodePlacement(P1,P2,T2,elecNeeded,cond,options,uniTag)
 % (c) Yu (Andy) Huang, Parra Lab at CCNY
 % yhuang16@citymail.cuny.edu
 % April 2018
-% UPDATED BY AA 08/12/21 for >6 tissues
 
 [dirname,baseFilename] = fileparts(P1);
 if isempty(dirname), dirname = pwd; end
@@ -39,15 +38,7 @@ hdrInfo = struct('pixdim',pixdim,'dim',dim,'v2w',v2w);
 % keep the header info for use later
 % scalp_original = template.img==5;
 % scalp = changeOrientationVolume(scalp_original,perm,isFlipInner);
-if max(template.img(:)) ~= 6
-    tis = fieldnames(cond); tis = tis(1:max(template.img(:)));
-    if sum(contains(tis,'skin'))>0; scalp = template.img == find(contains(tis,'skin'));
-    elseif sum(contains(tis,'scalp'))>0; scalp = template.img == find(cond.scalp);
-    elseif ~exist('scalp','var'); scalp = template.img == input('Please Indicate the Tissue Index of the Scalp:'); 
-    end
-else
-    scalp = template.img==5;
-end
+scalp = template.img==5;
 
 if ~isempty(indP) || ~isempty(indN)
 %     landmarks = changeOrientationPointCloud(landmarks_original,perm,isFlipInner,size(scalp));
@@ -215,6 +206,5 @@ save_untouch_nii(template,[dirname filesep baseFilename '_' uniTag '_mask_gel.ni
 % save([dirname filesep baseFilename '_' uniTag '_labelVol.mat'],'volume_elecLabel','volume_gelLabel');
 [~,baseFilenameRasRSPD] = fileparts(P2);
 if ~exist([dirname filesep baseFilenameRasRSPD '_header.mat'],'file')
-    hdrInfo.options = options;
     save([dirname filesep baseFilenameRasRSPD '_header.mat'],'hdrInfo');
 end
