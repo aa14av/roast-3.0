@@ -427,7 +427,6 @@ end
 
 if ~exist('T2','var')
     T2 = [];
-elseif isempty(T2); T2 = [];
 else
     if ~exist(T2,'file'), error(['The T2 MRI you provided ' T2 ' does not exist.']); end
     
@@ -521,10 +520,10 @@ if ~exist('conductivities','var')
                            'skin',0.465,'air',2.5e-14,'gel',0.3,'electrode',5.9e7); % literature values
 else
     if ~isstruct(conductivities), error('Unrecognized format of conductivity values. Please enter as a structure, with field names as ''white'', ''gray'', ''csf'', ''bone'', ''skin'', ''air'', ''gel'' and ''electrode''.'); end
-%     conductivitiesNam = fieldnames(conductivities);
-%     if isempty(conductivitiesNam) || ~all(ismember(conductivitiesNam,{'white';'gray';'csf';'bone';'skin';'air';'gel';'electrode'}))
-%         error('Unrecognized tissue names detected. Supported tissue names in the conductivity option are ''white'', ''gray'', ''csf'', ''bone'', ''skin'', ''air'', ''gel'' and ''electrode''.');
-%     end
+    conductivitiesNam = fieldnames(conductivities);
+    if isempty(conductivitiesNam) || ~all(ismember(conductivitiesNam,{'white';'gray';'csf';'bone';'skin';'air';'gel';'electrode'}))
+        error('Unrecognized tissue names detected. Supported tissue names in the conductivity option are ''white'', ''gray'', ''csf'', ''bone'', ''skin'', ''air'', ''gel'' and ''electrode''.');
+    end
     if ~isfield(conductivities,'white')
         conductivities.white = 0.126;
     else
@@ -765,11 +764,11 @@ if all(strcmpi(recipe,'leadfield'))
         end
     end
     % only warn users the first time they run for this subject
-%     if all(~isSolved) && ~exist([dirname filesep baseFilename '_' uniqueTag '_roastResult.mat'],'file')
-%         warning('You specified the ''recipe'' as the ''lead field generation''. Nice choice! Note all customized options on electrodes are overwritten by the defaults. Refer to the readme file for more details. Also this will usually take a long time (>1 day) to generate the lead field for all the candidate electrodes.');
-%         doLFconfirm = input('Do you want to continue? ([Y]/N)','s');
-%         if strcmpi(doLFconfirm,'n'), disp('Aborted.'); return; end
-%     end
+    if all(~isSolved) && ~exist([dirname filesep baseFilename '_' uniqueTag '_roastResult.mat'],'file')
+        warning('You specified the ''recipe'' as the ''lead field generation''. Nice choice! Note all customized options on electrodes are overwritten by the defaults. Refer to the readme file for more details. Also this will usually take a long time (>1 day) to generate the lead field for all the candidate electrodes.');
+        doLFconfirm = input('Do you want to continue? ([Y]/N)','s');
+        if strcmpi(doLFconfirm,'n'), disp('Aborted.'); return; end
+    end
 end
 
 if ~strcmp(baseFilename,'nyhead')
@@ -810,23 +809,11 @@ else
     
 end
 
-if (isempty(T2) && ~exist([dirname filesep baseFilenameRasRSPD '_T1orT2_masks_preCorr.nii'],'file')) ||...
-        (~isempty(T2) && ~exist([dirname filesep baseFilenameRasRSPD '_T1andT2_masks_preCorr.nii'],'file'))
-    disp('======================================================')
-    disp('     STEP 2.5 (out of 6): FIXING CSF...       ')
-    disp('======================================================')
-    fix_csf(subjRasRSPD,T2,conductivities);
-else
-    disp('======================================================')
-    disp('    CSF FIX ALREADY DONE, SKIP STEP 2.5    ')
-    disp('======================================================')
-end
-
 if ~exist([dirname filesep baseFilename '_' uniqueTag '_mask_elec.nii'],'file')
     disp('======================================================')
     disp('      STEP 3 (out of 6): ELECTRODE PLACEMENT...       ')
     disp('======================================================')
-    hdrInfo = electrodePlacement(subj,subjRasRSPD,T2,elecName,conductivities,options,uniqueTag);
+    hdrInfo = electrodePlacement(subj,subjRasRSPD,T2,elecName,options,uniqueTag);
 else
     disp('======================================================')
     disp('         ELECTRODE ALREADY PLACED, SKIP STEP 3        ')
@@ -839,7 +826,7 @@ if ~exist([dirname filesep baseFilename '_' uniqueTag '.mat'],'file')
     disp('======================================================')
     disp('        STEP 4 (out of 6): MESH GENERATION...         ')
     disp('======================================================')
-    [node,elem,face,numOfTissue] = meshByIso2mesh(s,subj,subjRasRSPD,T2,meshOpt,conductivities,hdrInfo);
+    [node,elem,face,numOfTissue] = meshByIso2mesh(s,subj,subjRasRSPD,T2,meshOpt,hdrInfo,uniqueTag);
 else
     disp('======================================================')
     disp('          MESH ALREADY GENERATED, SKIP STEP 4         ')
@@ -853,10 +840,9 @@ if any(~strcmpi(recipe,'leadfield'))
         disp('======================================================')
         disp('       STEP 5 (out of 6): SOLVING THE MODEL...        ')
         disp('======================================================')
-        prepareForGetDP(subj,node,elem,elecName,numOfTissue,uniqueTag);
+        prepareForGetDP(subj,node,elem,elecName,uniqueTag);
         indElecSolve = 1:length(elecName);
-        solveByGetDP(subj,injectCurrent,numOfTissue,conductivities,indElecSolve,uniqueTag,'');
-%         solveByGetDP_6(subj,injectCurrent,conductivities,indElecSolve,uniqueTag,'')
+        solveByGetDP(subj,injectCurrent,conductivities,indElecSolve,uniqueTag,'');
     else
         disp('======================================================')
         disp('           MODEL ALREADY SOLVED, SKIP STEP 5          ')
@@ -910,7 +896,7 @@ else
         disp('========================================================')
         disp('STEP 6 (final step): ASSEMBLING AND SAVING LEAD FIELD...')
         disp('========================================================')
-        postGetDP(subj,[],node,hdrInfo,conductivities,uniqueTag,indStimElec,indInRoastCore(isInRoastCore));
+        postGetDP(subj,[],node,hdrInfo,uniqueTag,indStimElec,indInRoastCore(isInRoastCore));
     else
         disp('======================================================')
         disp('         ALL STEPS DONE, READY TO DO TARGETING        ')
