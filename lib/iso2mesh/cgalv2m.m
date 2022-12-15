@@ -65,8 +65,9 @@ if(isstruct(opt) & length(opt)==1)  % does not support settings for multiple lab
 	if(isfield(opt,'reratio'))    reratio=opt.reratio; end
 end
 
-saveinr(vol,fullfile(fileparts(mfilename('fullpath')),'mesh',strcat('pre',num2str(s),'_cgalmesh.inr')));
-deletemeshfile(fullfile(fileparts(mfilename('fullpath')),'mesh',strcat('post',num2str(s),'_cgalmesh.mesh')));
+isoDir = fileparts(mfilename('fullpath'));
+saveinr(vol,fullfile(isoDir,'mesh',strcat('pre',num2str(s),'_cgalmesh.inr')));
+deletemeshfile(fullfile(isoDir,'mesh',strcat('post',num2str(s),'_cgalmesh.mesh')));
 
 randseed=hex2dec('623F9A9E'); % "U+623F U+9A9E"
 
@@ -79,14 +80,16 @@ if(ischar(maxvol))
 else
     format_maxvol='%f';
 end
-cmd=sprintf(['"%s%s" "%s" "%s" %f %f %f %f ' format_maxvol ' %d'],fullfile(fileparts(mfilename('fullpath')),'bin','cgalmesh'),exesuff,...
-    fullfile(fileparts(mfilename('fullpath')),'mesh',strcat('pre',num2str(s),'_cgalmesh.inr')),fullfile(fileparts(mfilename('fullpath')),'mesh',strcat('post',num2str(s),'_cgalmesh.mesh')),ang,ssize,...
-    approx,reratio,maxvol,randseed);
+cmd=sprintf(['"%s%s" "%s" "%s" %f %f %f %f ' format_maxvol ' %d'], ...
+    fullfile(isoDir,'bin','cgalmesh'),exesuff,...
+    fullfile(isoDir,'mesh',strcat('pre',num2str(s),'_cgalmesh.inr')),...
+    fullfile(isoDir,'mesh',strcat('post',num2str(s),'_cgalmesh.mesh')),...
+    ang,ssize,approx,reratio,maxvol,randseed);
 system(cmd);
-if(~exist(fullfile(fileparts(mfilename('fullpath')),'mesh',strcat('post',num2str(s),'_cgalmesh.mesh')),'file'))
+if(~exist(fullfile(isoDir,'mesh',strcat('post',num2str(s),'_cgalmesh.mesh')),'file'))
     error(['output file was not found, failure was encountered when running command: \n',cmd]);
 end
-[node,elem,face]=readmedit(fullfile(fileparts(mfilename('fullpath')),'mesh',strcat('post',num2str(s),'_cgalmesh.mesh')));
+[node,elem,face]=readmedit(fullfile(isoDir,'mesh',strcat('post',num2str(s),'_cgalmesh.mesh')));
 
 % if a transformation matrix/offset vector supplied, apply them
 if (isstruct(opt) & length(opt)==1)
