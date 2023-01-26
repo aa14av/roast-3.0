@@ -167,7 +167,7 @@ for i=1:3
 end
 
 if ~isempty(mydata.mri2mni)
-    h(4) = subplot(2,2,4); axis off; caxis(mydata.clim);
+    h(4) = subplot(2,2,4); axis off; %caxis(mydata.clim);
     mniCoord = round(mydata.mri2mni*[mydata.pos 1]');
     coordInfo = {['Voxel: ' num2str(mydata.pos(1)) ',' num2str(mydata.pos(2)) ',' num2str(mydata.pos(3))],...
         ['MNI: ' num2str(mniCoord(1)) ',' num2str(mniCoord(2)) ',' num2str(mniCoord(3))]};
@@ -175,7 +175,7 @@ if ~isempty(mydata.mri2mni)
 end
 
 % if ~isempty(mydata.label)
-    h(4) = subplot(2,2,4); axis off; caxis(mydata.clim);
+    h(4) = subplot(2,2,4); axis off; %caxis(mydata.clim);
     h(5) = colorbar('west');
     set(h(5),'YAxisLocation','right','FontSize',18);
 %     title(h(5), 'V/m','FontSize',18);

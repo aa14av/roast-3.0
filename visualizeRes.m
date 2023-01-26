@@ -128,7 +128,7 @@ if isRoast
     plotmesh(dataShow,indNode_elecFace,indNode_elecElm,'LineStyle','none');
     axis off; rotate3d on;
     % set(hp1,'SpecularColorReflectance',0,'SpecularExponent',50);
-    caxis(dataShowRange);
+    %clim(dataShowRange);%caxis
     lightangle(-90,45)
     lightangle(90,45)
     lightangle(-90,-45)
@@ -170,7 +170,7 @@ if isRoast
     plotmesh(dataShow,indNode_elecFace,indNode_elecElm,'LineStyle','none');
     axis off; rotate3d on;
     % set(hp2,'SpecularColorReflectance',0,'SpecularExponent',50);
-    caxis(dataShowRange);
+    %caxis(dataShowRange);
     lightangle(-90,45)
     lightangle(90,45)
     lightangle(-90,-45)
@@ -212,7 +212,7 @@ else
     plotmesh(dataShow,indNode_elecFace,indNode_elecElm,'LineStyle','none');
     axis off; rotate3d on;
     % set(hp2,'SpecularColorReflectance',0,'SpecularExponent',50);
-    caxis(dataShowRange);
+    %caxis(dataShowRange);
     lightangle(-90,45)
     lightangle(90,45)
     lightangle(-90,-45)
