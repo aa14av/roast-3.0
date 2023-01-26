@@ -53,8 +53,8 @@ if sum(cellfun(@(x) sum(regexpi(x,'csf|cerebrospinal')),mnames,'uni',1)) == 0
 end
 
 % Load Segmentations
-am = load_nii(fullfile(dirname,[baseFilenameRasRSPD '_masks.nii']));
-save_nii(am,fullfile(dirname,[erase(baseFilenameRasRSPD,'.nii') '_masks_preCorr.nii'])); % Save Old Segmentations
+am = load_untouch_nii(fullfile(dirname,[baseFilenameRasRSPD '_masks.nii']));
+save_untouch_nii(am,fullfile(dirname,[erase(baseFilenameRasRSPD,'.nii') '_masks_preCorr.nii'])); % Save Old Segmentations
 
 masks = am.img;
 gm_mask = ismember(masks, cond.index(cellfun(@(x) sum(regexpi(x,'gm|gray|grey')),mnames,'uni',1)~=0,1)); % Get Gray Matter
@@ -75,4 +75,8 @@ masks(gm_mask&dil_bone) = cond.index(cellfun(@(x) sum(regexpi(x,'csf|cerebrospin
 nii = make_nii(masks); 
 nii.hdr = am.hdr;
 filename = fullfile(dirname,baseFilenameRasRSPD);
-save_nii(nii,filename); % Save Corrected Segmentation
+% try
+save_untouch_nii(nii,filename); % Save Corrected Segmentation
+% catch ME
+%     save_untouch_nii(nii, filename);
+% end

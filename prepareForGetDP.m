@@ -1,4 +1,4 @@
-function prepareForGetDP(P,node,elem,elecNeeded,uniTag)
+function prepareForGetDP(P,node,elem,elecNeeded,numOfTissue,uniTag)
 % prepareForGetDP(P,node,elem,elecNeeded,uniTag)
 %
 % Prepare to solve in getDP
@@ -6,6 +6,7 @@ function prepareForGetDP(P,node,elem,elecNeeded,uniTag)
 % (c) Yu (Andy) Huang, Parra Lab at CCNY
 % yhuang16@citymail.cuny.edu
 % October 2017
+% UPDATED BY AA 08/12/21 for >6 tissues
 
 [dirname,baseFilename] = fileparts(P);
 if isempty(dirname), dirname = pwd; end
@@ -38,8 +39,8 @@ if isempty(dirname), dirname = pwd; end
 % 
 % save([dirname filesep baseFilename '_' uniTag '_elecMeshLabels.mat'],'label_elec','label_gel');
 
-numOfTissue = 6; % hard coded across ROAST.
 numOfElec = length(elecNeeded);
+% numOfTissue = length(fieldnames(cond))-2; % remove gel + elec
 
 element_elecNeeded = cell(numOfElec,1);
 area_elecNeeded = zeros(numOfElec,1);
@@ -95,33 +96,46 @@ if ~exist([dirname filesep baseFilename '_' uniTag '_ready.msh'],'file')
     disp('setting up boundary conditions...');
     
     fid_in = fopen([dirname filesep baseFilename '_' uniTag '.msh']);
-    fid_out = fopen([dirname filesep baseFilename '_' uniTag '_ready.msh'],'w');
+    copyfile([dirname filesep baseFilename '_' uniTag '.msh'],[dirname filesep baseFilename '_' uniTag '_ready.msh'])
+    fid_out = fopen([dirname filesep baseFilename '_' uniTag '_ready.msh']);
     
     numOfPart = length(unique(elem(:,5)));
+    numOfElem = length(elem);
     while ~feof(fid_in)
         s = fgetl(fid_in);
-        
-        if strcmp(s,'$Elements')
-            fprintf(fid_out,'%s\n',s);
-            s = fgetl(fid_in);
-            numOfElem = str2num(s);
-            fprintf(fid_out,'%s\n',num2str(numOfElem+size(cell2mat(element_elecNeeded),1)));
-        elseif strcmp(s,'$EndElements')
+        if strcmp(s,'$EndElements')
             ii = 0;
             for j=1:numOfElec
                 for i=1:size(element_elecNeeded{j},1)
-                    
                     fprintf(fid_out,'%s \n',[num2str(numOfElem+i+ii) ' 2 2 ' num2str(numOfPart+j) ' ' num2str(numOfPart+j) ' ' num2str(element_elecNeeded{j}(i,1)) ' ' num2str(element_elecNeeded{j}(i,2)) ' ' num2str(element_elecNeeded{j}(i,3))]);
-                    
                 end
                 ii = ii + i;
             end
-            
-            fprintf(fid_out,'%s\n',s);
-        else
             fprintf(fid_out,'%s\n',s);
         end
     end
+        
+%         if strcmp(s,'$Elements')
+%             fprintf(fid_out,'%s\n',s);
+%             s = fgetl(fid_in);
+%             numOfElem = str2num(s);
+%             fprintf(fid_out,'%s\n',num2str(numOfElem+size(cell2mat(element_elecNeeded),1)));
+%         elseif strcmp(s,'$EndElements')
+%             ii = 0;
+%             for j=1:numOfElec
+%                 for i=1:size(element_elecNeeded{j},1)
+%                     
+%                     fprintf(fid_out,'%s \n',[num2str(numOfElem+i+ii) ' 2 2 ' num2str(numOfPart+j) ' ' num2str(numOfPart+j) ' ' num2str(element_elecNeeded{j}(i,1)) ' ' num2str(element_elecNeeded{j}(i,2)) ' ' num2str(element_elecNeeded{j}(i,3))]);
+%                     
+%                 end
+%                 ii = ii + i;
+%             end
+%             
+%             fprintf(fid_out,'%s\n',s);
+%         else
+%             fprintf(fid_out,'%s\n',s);
+%         end
+%     end
     
     fclose(fid_in);
     fclose(fid_out);
