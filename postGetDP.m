@@ -81,15 +81,6 @@ if ~isempty(P2) % for roast()
     template.fileprefix = [dirname filesep baseFilename '_' uniTag '_emag'];
     save_untouch_nii(template,[dirname filesep baseFilename '_' uniTag '_emag.nii']);
     
-    template.hdr.dime.dim(1) = 4;
-    template.hdr.dime.dim(5) = 3;
-    template.img = single(ef_all);
-    template.hdr.dime.glmax = max(ef_all(:));
-    template.hdr.dime.glmin = min(ef_all(:));
-    template.hdr.hist.descrip = 'EF';
-    template.fileprefix = [dirname filesep baseFilename '_' uniTag '_e'];
-    save_untouch_nii(template,[dirname filesep baseFilename '_' uniTag '_e.nii']);
-    
     % McCann et al 2019
 %     gm_id = 2; gm_con = 0.276;
 %     wm_id = 1; wm_con = 0.126;
@@ -98,7 +89,7 @@ if ~isempty(P2) % for roast()
 %     skin_id = 5; skin_con = 0.465;
 %     air_id = 6; air_con = 2.5e-14; % NOT ZERO!!
     
-    am = load_untouch_nii(fullfile(dirname,'T1_T1orT2_masks.nii'));
+    am = load_untouch_nii(fullfile(dirname,[baseFilenameRasRSPD '_T1orT2_masks.nii']));
     allMask_d = double(am.img);
     
     % Create Conductivity Masks
@@ -122,43 +113,16 @@ if ~isempty(P2) % for roast()
     end
     
     Jroast = allCond.*ef_mag;
-    xyzJroast = repmat(allCond,[1 1 1 3]).*ef_all; % HARDCODED
     
     % make J nii
     Jroast(isnan(Jroast))=0;
-    brain = ismember(allMask_d,cond.index(cond.brain==1));
     Jbrain = zeros(size(Jroast,1),size(Jroast,2),size(Jroast,3));
-    Jbrain(brain) = Jroast(brain);
-    xyzJbrain = zeros(size(Jroast,1),size(Jroast,2),size(Jroast,3),3);
-    xyzJbrain(repmat(brain,[1 1 1 3])) = xyzJroast(repmat(brain,[1 1 1 3]));
-    
+    Jbrain(allMask_d == 1 | allMask_d == 2) = Jroast(allMask_d == 1 | allMask_d == 2);
     % save Jroast.mat Jroast
     % save_nii(J_nii_mod,'Jmap_mod.nii')
     save([dirname filesep baseFilename '_' uniTag '_Jbrain.mat'],'Jbrain');
     save([dirname filesep baseFilename '_' uniTag '_Jroast.mat'],'Jroast'); %baseFilename is T1 (nii file name without .nii)
-    save([dirname filesep baseFilename '_' uniTag '_xyzJbrain.mat'],'xyzJbrain');
-    save([dirname filesep baseFilename '_' uniTag '_xyzJroast.mat'],'xyzJroast');
     
-    template.hdr.dime.dim(1) = 4;
-    template.hdr.dime.dim(5) = 3;
-    template.img = single(xyzJroast);
-    template.hdr.dime.glmax = max(xyzJroast(:));
-    template.hdr.dime.glmin = min(xyzJroast(:));
-    template.hdr.hist.descrip = 'xyzJroast';
-    template.fileprefix = [dirname filesep baseFilename '_' uniTag '_xyzJroast'];
-    save_untouch_nii(template,[dirname filesep baseFilename '_' uniTag '_xyzJroast.nii']);
-    
-    template.hdr.dime.dim(1) = 4;
-    template.hdr.dime.dim(5) = 3;
-    template.img = single(xyzJbrain);
-    template.hdr.dime.glmax = max(xyzJbrain(:));
-    template.hdr.dime.glmin = min(xyzJbrain(:));
-    template.hdr.hist.descrip = 'xyzJbrain';
-    template.fileprefix = [dirname filesep baseFilename '_' uniTag '_xyzJbrain'];
-    save_untouch_nii(template,[dirname filesep baseFilename '_' uniTag '_xyzJbrain.nii']);
-    
-    template.hdr.dime.dim(1) = 3;
-    template.hdr.dime.dim(5) = 1;
     template.img = single(Jroast);
     template.hdr.dime.glmax = max(Jroast(:));
     template.hdr.dime.glmin = min(Jroast(:));
@@ -166,14 +130,28 @@ if ~isempty(P2) % for roast()
     template.fileprefix = [dirname filesep baseFilename '_' uniTag '_Jroast'];
     save_untouch_nii(template,[dirname filesep baseFilename '_' uniTag '_Jroast.nii']);
     
-    template.hdr.dime.dim(1) = 3;
-    template.hdr.dime.dim(5) = 1;
     template.img = single(Jbrain);
     template.hdr.dime.glmax = max(Jbrain(:));
     template.hdr.dime.glmin = min(Jbrain(:));
     template.hdr.hist.descrip = 'Jbrain';
     template.fileprefix = [dirname filesep baseFilename '_' uniTag '_Jbrain'];
     save_untouch_nii(template,[dirname filesep baseFilename '_' uniTag '_Jbrain.nii']);
+
+    template.img = single(allCond);
+    template.hdr.dime.glmax = max(allCond(:));
+    template.hdr.dime.glmin = min(allCond(:));
+    template.hdr.hist.descrip = 'Conductivity';
+    template.fileprefix = [dirname filesep baseFilename '_' uniTag '_Cond'];
+    save_untouch_nii(template,[dirname filesep baseFilename '_' uniTag '_Cond.nii']);
+    
+    template.hdr.dime.dim(1) = 4;
+    template.hdr.dime.dim(5) = 3;
+    template.img = single(ef_all);
+    template.hdr.dime.glmax = max(ef_all(:));
+    template.hdr.dime.glmin = min(ef_all(:));
+    template.hdr.hist.descrip = 'EF';
+    template.fileprefix = [dirname filesep baseFilename '_' uniTag '_e'];
+    save_untouch_nii(template,[dirname filesep baseFilename '_' uniTag '_e.nii']);
     
     save([dirname filesep baseFilename '_EV.mat'],'vol_all','ef_all','ef_mag');    
     
@@ -183,10 +161,8 @@ if ~isempty(P2) % for roast()
     disp('...and also saved as NIFTI files:');
     disp(['Voltage: ' dirname filesep baseFilename '_' uniTag '_v.nii']);
     disp(['E-field: ' dirname filesep baseFilename '_' uniTag '_e.nii']);
-    disp(['Current Density magnitude: ' dirname filesep baseFilename '_' uniTag '_Jroast.nii']);
-    disp(['Masked Current Density magnitude: ' dirname filesep baseFilename '_' uniTag '_Jbrain.nii']);
-    disp(['Current Density vector: ' dirname filesep baseFilename '_' uniTag '_xyzJroast.nii']);
-    disp(['Masked Current Density vector: ' dirname filesep baseFilename '_' uniTag '_xyzJbrain.nii']);
+    disp(['Current Density: ' dirname filesep baseFilename '_' uniTag '_Jroast.nii']);
+    disp(['Masked Current Density: ' dirname filesep baseFilename '_' uniTag '_Jbrain.nii']);
     disp(['E-field magnitude: ' dirname filesep baseFilename '_' uniTag '_emag.nii']);
     disp('======================================================');
     disp('You can also find all the results in the following two text files: ');
