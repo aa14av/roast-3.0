@@ -302,10 +302,10 @@ end
 if ~exist('targetRadius','var')
     targetRadius = 2;
 else
-%     if targetRadius<=0 | mod(targetRadius,1)~=0
-%         error('Unrecognized option value. Please enter positive integer value for option ''targetRadius''.');
-%     end
-%     warning('You''re changing the advanced options of ROAST-TARGET. Unless you know what you''re doing, please keep the ''targetRadius'' value default.');
+    if targetRadius<=0 || mod(targetRadius,1)~=0
+        error('Unrecognized option value. Please enter positive integer value for option ''targetRadius''.');
+    end
+    warning('You''re changing the advanced options of ROAST-TARGET. Unless you know what you''re doing, please keep the ''targetRadius'' value default.');
 end
 
 if ~exist('k','var')

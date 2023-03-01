@@ -119,7 +119,7 @@ for i=1:size(P,1)
     matlabbatch{1}.spm.spatial.preproc.warp.reg = [0 0.001 0.5 0.05 0.2]; % P(alpha) % 4;
     matlabbatch{1}.spm.spatial.preproc.warp.affreg = 'mni'; % template type for initial affine registration. Important!
     matlabbatch{1}.spm.spatial.preproc.warp.samp = 3; % downsample distance for segmentation
-    matlabbatch{1}.spm.spatial.preproc.warp.write = [1 1]; % save the deformation/warping fields: forward deform ([0 1]), inverse deform ([1 0]), or both ([1 1]). We do NOT save anything for this option ([0 0]) at this stage. % ANDY 2013-05-03
+    matlabbatch{1}.spm.spatial.preproc.warp.write = [0 0]; % save the deformation/warping fields: forward deform ([0 1]), inverse deform ([1 0]), or both ([1 1]). We do NOT save anything for this option ([0 0]) at this stage. % ANDY 2013-05-03
 
     % below new options from SPM12
     matlabbatch{1}.spm.spatial.preproc.warp.mrf = 0; % in spm8, no MRF cleanup was done

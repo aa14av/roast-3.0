@@ -25,7 +25,6 @@ function p = optimize_prepare(p,A,locs)
 %
 % Yu (Andy) Huang, October 2014
 % Yu (Andy) Huang, January 2017
-% Alejandro Albizu, June 2020 (Changed node search routine)
 
 % A = p.A;
 % locs = p.locs;
@@ -33,16 +32,6 @@ Nlocs = p.Nlocs;
 
 targetCoord = p.targetCoord;
 numOfTargets = p.numOfTargets;
-
-% node_distances = zeros(Nlocs,numOfTargets);
-% sorted_nodes = zeros(Nlocs,numOfTargets);
-% distances_to_target = zeros(Nlocs,numOfTargets);
-% distances_to_target = pdist2(locs,targetCoord);
-% for n = 1:numOfTargets
-% %     tmp = locs - repmat(targetCoord(n,:),size(locs,1),1);
-% %     distances_to_target(:,n) = sqrt(sum(tmp.*tmp,2));
-% %         [node_distances(:,n),sorted_nodes(:,n)] = sort(distances_to_target(:,n));
-% end
 
 % node_distances = zeros(Nlocs,numOfTargets);
 % sorted_nodes = zeros(Nlocs,numOfTargets);
@@ -63,26 +52,7 @@ for n = 1:numOfTargets
 end
 
 p.target_nodes = target_nodes;
-
-targetRadius = p.targetRadius;
-nodeSearch = cell(numOfTargets,1);
-for n = 1:numOfTargets
-    nodeSearch(n) = rangesearch(locs,targetCoord(n,:),targetRadius);
-    if n == 1
-        target_nodes = [nodeSearch{n}];
-    else
-        target_nodes = [target_nodes, nodeSearch{n}];
-    end
-    disp(['Target Coordinates: ' num2str(targetRadius*2) 'mm Sphere generated at voxel [' num2str(targetCoord(n,1)) ',' num2str(targetCoord(n,2)) ',' num2str(targetCoord(n,3)) ']']) 
-    disp(['Target Coordinates: Sphere contains ' num2str(length(nodeSearch{n})) ' nodes'])
-%     target_nodes{n} = find(distances_to_target(:,n)<targetRadius);
-    if isempty(nodeSearch{n})
-        error('No nodes found near target. Please increase the value of ''targetRadius''.');
-    end
-end
-
-p.target_nodes = target_nodes;
-% target_nodes = cell2mat(target_nodes);
+target_nodes = cell2mat(target_nodes);
 nontarget_nodes = setdiff(1:Nlocs,target_nodes);
 
 optType = p.optType;

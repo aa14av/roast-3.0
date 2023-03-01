@@ -47,7 +47,7 @@ recipe is anode on Fp1 (1 mA) and cathode on P4 (-1 mA). You can specify
 any recipe you want in the format of `electrodeName-injectedCurrent` pair
 (see [Example 3](#example-3)). You can pick any electrode from the 10/20, 10/10, 10/05, BioSemi-256, or EGI HCGSN-256 EEG system (see the Microsoft Excel file `capInfo.xls` under the root directory of ROAST). The unit of the injected current is in milliampere (mA). Make sure
 they sum up to 0. You can also place electrodes at customized locations
-on the scalp. See [Example 5](#example-5) for details. You can also use a special recipe called "leadField", so that ROAST will automatically generate all the data that will allow you to call `roast_target()` later to perform targeted TES. See [Example 24](#example-24) and [How to use `roast_target`](#how-to-use-roast_target).
+on the scalp. See [Example 5](#example-5) for details. You can also use a special recipe called "leadField", so that ROAST will automatically generate all the data that will allow you to call `roast_target()` later to perform targeted TES. See [Example 24](#example-24) and [How to use `roast_target`](#3-how-to-use-roast_target).
 
 `varargin`: Options for ROAST can be entered as `Name-Value` pairs in the 3rd argument 
 (available from ROAST v2.0). The syntax follows the Matlab convention (see `plot()` for example).
@@ -438,13 +438,13 @@ This will generate the lead field for subject1. Also since the MRI resolution is
 
 `roast_target(subj,simTag,targetCoord,varargin)`
 
-`subj`: file name of the MRI of the subject that you want to run targeting. This follows the [same syntax](#synopsis-of-roast) as the `roast()` function.
+`subj`: file name of the MRI of the subject that you want to run targeting. This follows the [same syntax](#21-synopsis-of-roast) as the `roast()` function. Make sure that you use the original MRI that you used to run `roast()` for generating the lead field, even if the original MRI is not in RAS orientation, or you turned on the `'resampling'` or did `'zeroPadding'` option when running `roast()` (see [Example 29](#example-29)), as `roast_target()`  will take care of all the transforms of MRI data (re-orientation into RAS, resampling or zero-padding).
 
 `simTag`: the `simulationTag` that you used in `roast()` when generating the lead field. For example, if you generated the lead field for the MNI152 head following [Example 24](#example-24), you will use the tag you entered in that example (`'MNI152leadField'`) for this `simTag` in `roast_target()`. See [Example 27](#example-27). Similarly, if you run [Example 25](#example-25) first, you can run [Example 28](#example-28) for targeting on the New York head.
 
 `targetCoord`: the coordinates of the locations in the brain that you want to target. You can do either single location or multiple locations, by putting the coordinates into a *N-by-3* matrix, where *N* is the number of target locations. The coordinates can be either the voxel coordinates or the MNI coordinates, specified by the option `coordType` (see below). If you don't provide any target location, it defaults to the MNI coordinates of the left primary motor cortex (`[-48 -8 50]`).
 
-`varargin`: Options for `roast_target()`. This follows the [same syntax](#synopsis-of-roast) as the `roast()` function.
+`varargin`: Options for `roast_target()`. This follows the [same syntax](#21-synopsis-of-roast) as the `roast()` function.
 
 `'coordType'` -- the coordinate space where the target coordinates reside.  
 `'MNI'` (default) | `'voxel'`  
@@ -711,10 +711,3 @@ ROAST is considered as an "aggregate" rather than "derived work", based on the d
 yhuang16@citymail.cuny.edu
 
 September 2019
-
-    Adapted from https://github.com/andypotatohy/roast for >6 tissue types and CSF correction
-    
-    Alejandro Albizu, Center for Cognitive Aging and Memory at University of Florida
-    aa14av@gmail.com
-    
-    August 2022
