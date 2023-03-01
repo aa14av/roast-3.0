@@ -51,7 +51,7 @@ end
 
 masks = load_untouch_nii([dirname filesep baseFilenameRasRSPD '_masks.nii']);
 allMask = masks.img;
-numOfTissue = max(allMask(:));
+numOfTissue = 6; % hard coded across ROAST.  max(allMask(:));
 if isRoast
     gel = load_untouch_nii([dirname filesep baseFilename '_' uniTag '_mask_gel.nii']);
     numOfGel = max(gel.img(:));
@@ -128,7 +128,7 @@ if isRoast
     plotmesh(dataShow,indNode_elecFace,indNode_elecElm,'LineStyle','none');
     axis off; rotate3d on;
     % set(hp1,'SpecularColorReflectance',0,'SpecularExponent',50);
-    %clim(dataShowRange);%caxis
+    caxis(dataShowRange);
     lightangle(-90,45)
     lightangle(90,45)
     lightangle(-90,-45)
@@ -170,7 +170,7 @@ if isRoast
     plotmesh(dataShow,indNode_elecFace,indNode_elecElm,'LineStyle','none');
     axis off; rotate3d on;
     % set(hp2,'SpecularColorReflectance',0,'SpecularExponent',50);
-    %caxis(dataShowRange);
+    caxis(dataShowRange);
     lightangle(-90,45)
     lightangle(90,45)
     lightangle(-90,-45)
@@ -212,7 +212,7 @@ else
     plotmesh(dataShow,indNode_elecFace,indNode_elecElm,'LineStyle','none');
     axis off; rotate3d on;
     % set(hp2,'SpecularColorReflectance',0,'SpecularExponent',50);
-    %caxis(dataShowRange);
+    caxis(dataShowRange);
     lightangle(-90,45)
     lightangle(90,45)
     lightangle(-90,-45)

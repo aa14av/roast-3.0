@@ -39,10 +39,11 @@ hdrInfo = struct('pixdim',pixdim,'dim',dim,'v2w',v2w);
 % scalp_original = template.img==5;
 % scalp = changeOrientationVolume(scalp_original,perm,isFlipInner);
 % scalp = template.img==5;
-if max(template.img(:)) ~= 6
-    tis = fieldnames(cond); tis = tis(1:max(template.img(:)));
+numOfTissue = max(template.img(:));
+if  numOfTissue ~= 6 % HARDCODED
+    tis = fieldnames(cond); tis = tis(1:numOfTissue);
     if sum(contains(tis,'skin'))>0; scalp = template.img == find(contains(tis,'skin'));
-    elseif sum(contains(tis,'scalp'))>0; scalp = template.img == find(cond.scalp);
+    elseif sum(contains(tis,'scalp'))>0; scalp = template.img == find(contains(tis,'scalp'));
     elseif ~exist('scalp','var'); scalp = template.img == input('Please Indicate the Tissue Index of the Scalp:'); 
     end
 else

@@ -197,17 +197,17 @@ fprintf(fid,'%s\n','}');
 fclose(fid);
 
 str = computer('arch');
-filepath = fileparts(mfilename('fullpath'));
+filepath = fullfile(fileparts(mfilename('fullpath')),'lib','getdp-3.2.0','bin');
 switch str
     case 'win64'
 %         solverPath = 'lib\getdp-3.2.0\bin\getdp.exe';
-        solverPath = fullfile(filepath,'lib','getdp-3.2.0','bin','getdp.exe');
+        solverPath = fullfile(filepath,'getdp.exe');
     case 'glnxa64'
 %         solverPath = 'lib/getdp-3.2.0/bin/getdp';
-        solverPath = fullfile(filepath,'lib','getdp-3.2.0','bin','getdp');
+        solverPath = fullfile(filepath,'getdp');
     case 'maci64'
 %         solverPath = 'lib/getdp-3.2.0/bin/getdpMac';
-        solverPath = fullfile(filepath,'lib','getdp-3.2.0','bin','getdpMac');
+        solverPath = fullfile(filepath,'getdpMac');
     otherwise
         error('Unsupported operating system!');
 end

@@ -162,30 +162,26 @@ val = mydata.img(mydata.pos(1),mydata.pos(2),mydata.pos(3));
 for i=1:3
     subplot(2,2,i);
     hold on; plot(mydata.pos(d(i,1)),mydata.pos(d(i,2)),'o','color',ones(1,3)*0.4,'linewidth',3,'markersize',12); hold off;
-    axis xy; axis equal; axis tight; axis off; colormap jet%caxis(mydata.clim);
+    axis xy; axis equal; axis tight; axis off; caxis(mydata.clim);
     title([num2str(mydata.pos(d(i,:))) ': ' num2str(val,'%.2f')])
 end
 
 if ~isempty(mydata.mri2mni)
-    h(4) = subplot(2,2,4); axis off; %caxis(mydata.clim);
+    h(4) = subplot(2,2,4); axis off; caxis(mydata.clim);
     mniCoord = round(mydata.mri2mni*[mydata.pos 1]');
     coordInfo = {['Voxel: ' num2str(mydata.pos(1)) ',' num2str(mydata.pos(2)) ',' num2str(mydata.pos(3))],...
         ['MNI: ' num2str(mniCoord(1)) ',' num2str(mniCoord(2)) ',' num2str(mniCoord(3))]};
     title(h(4), coordInfo,'FontSize',16);
 end
 
-% if ~isempty(mydata.label)
-    h(4) = subplot(2,2,4); axis off; %caxis(mydata.clim);
+if ~isempty(mydata.label)
+    h(4) = subplot(2,2,4); axis off; caxis(mydata.clim);
     h(5) = colorbar('west');
     set(h(5),'YAxisLocation','right','FontSize',18);
-%     title(h(5), 'V/m','FontSize',18);
-% end
+    title(h(5), mydata.label,'FontSize',18);
+end
 
 colormap(mydata.color);
-
-set(h(1),'pos',[0,.5,.4,.4])
-set(h(2),'pos',[.5,.5,.4,.4])
-set(h(3),'pos',[0,0,.4,.4])
 
 mydata.h=h;
 set(gcf,'UserData',mydata);
