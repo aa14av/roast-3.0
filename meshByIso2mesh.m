@@ -1,4 +1,4 @@
-function [node,elem,face,numOfTissue] = meshByIso2mesh(s,P1,P2,T2,opt,cond,hdrInfo,uniTag)
+function [node,elem,face,numOfTissue] = meshByIso2mesh(s,P1,P2,T2,cond,opt,hdrInfo,uniTag)
 % [node,elem,face] = meshByIso2mesh(P1,P2,T2,opt,hdrInfo,uniTag)
 %
 % Generate volumetric tetrahedral mesh using iso2mesh toolbox
@@ -28,29 +28,21 @@ end
 
 data = load_untouch_nii([dirname filesep baseFilenameRasRSPD '_masks.nii']);
 allMask = data.img;
-allMaskShow = data.img;
 numOfTissue = max(allMask(:));
-% data = load_untouch_nii([dirname filesep baseFilename '_' uniTag '_mask_gel.nii']);
-% allMask(data.img==255) = 7;
-% data = load_untouch_nii([dirname filesep baseFilename '_' uniTag '_mask_elec.nii']);
-% allMask(data.img==255) = 8;
 
 data = load_untouch_nii([dirname filesep baseFilename '_' uniTag '_mask_gel.nii']);
 numOfGel = max(data.img(:));
 for i=1:numOfGel
-    allMask(data.img==i) = numOfTissue + i;
+    allMask(data.img==i) = numOfTissue + i; 
 end
-allMaskShow(data.img>0) = numOfTissue + 1;
 data = load_untouch_nii([dirname filesep baseFilename '_' uniTag '_mask_elec.nii']);
 numOfElec = max(data.img(:));
 for i=1:numOfElec
     allMask(data.img==i) = numOfTissue + numOfGel + i;
 end
-allMaskShow(data.img>0) = numOfTissue + 2;
 
-% sliceshow(allMask,[],[],[],'Tissue index','Segmentation. Click anywhere to navigate.')
-sliceshow(allMaskShow,[],[],[],'Tissue index','Segmentation. Click anywhere to navigate.',[],mri2mni)
-drawnow
+% sliceshow(allMask,[],[],[],'Tissue index','Segmentation. Click anywhere to navigate.',[],mri2mni)
+% drawnow
 
 % allMask = uint8(allMask);
 
@@ -73,9 +65,13 @@ for i=1:3, node(:,i) = node(:,i)*hdrInfo.pixdim(i); end
 % ANDY 2019-03-13
 
 % figure;
-% % plotmesh(node(:,1:3),face,elem)
-%
-% % visualize tissue by tissue
+% plotmesh(node(:,1:3),face,elem)
+
+% visualize tissue by tissue
+maskName = cell(1,numOfTissue+numOfGel+numOfElec); names = upper(fieldnames(cond));
+maskName(1:numOfTissue) = names(1:numOfTissue);
+for i=1:numOfGel, maskName{numOfTissue+i} = ['GEL' num2str(i)]; end
+for i=1:numOfElec, maskName{numOfTissue+numOfGel+i} = ['ELEC' num2str(i)]; end
 % for i=1:length(maskName)
 %     indElem = find(elem(:,5) == i);
 %     indFace = find(face(:,4) == i);
@@ -85,11 +81,5 @@ for i=1:3, node(:,i) = node(:,i)*hdrInfo.pixdim(i); end
 % end
 
 disp('saving mesh...')
-% maskName = {'WHITE','GRAY','CSF','BONE','SKIN','AIR','GEL','ELEC'};
-maskName = cell(1,numOfTissue+numOfGel+numOfElec); names = upper(fieldnames(cond));
-maskName(1:numOfTissue) = names(1:numOfTissue);
-% maskName(1:numOfTissue) = {'WHITE','GRAY','CSF','BONE','SKIN','AIR'};
-for i=1:numOfGel, maskName{numOfTissue+i} = ['GEL' num2str(i)]; end
-for i=1:numOfElec, maskName{numOfTissue+numOfGel+i} = ['ELEC' num2str(i)]; end
 savemsh(node(:,1:3),elem,[dirname filesep baseFilename '_' uniTag '.msh'],maskName);
 save([dirname filesep baseFilename '_' uniTag '.mat'],'node','elem','face','numOfTissue');

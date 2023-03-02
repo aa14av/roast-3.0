@@ -1,4 +1,4 @@
-function hdrInfo = electrodePlacement(P1,P2,T2,elecNeeded,options,uniTag)
+function hdrInfo = electrodePlacement(P1,P2,T2,elecNeeded,cond,options,uniTag)
 % hdrInfo = electrodePlacement(P1,P2,T2,elecNeeded,options,uniTag)
 %
 % Place electrodes on the scalp surface. options.elecPara contains all the options
