@@ -1,4 +1,4 @@
-function visualizeRes(P1,P2,T2,node,elem,face,inCurrent,hdrInfo,uniTag,showAll,varargin)
+function visualizeRes(P1,P2,T2,node,elem,face,inCurrent,cond,hdrInfo,uniTag,showAll,varargin)
 % visualizeRes(P1,P2,T2,node,elem,face,inCurrent,hdrInfo,uniTag,showAll,varargin)
 %
 % Display the simulation results. The 3D rendering is displayed in the
@@ -62,6 +62,9 @@ else
     indMonElec = find(abs(inCurrent)>1e-3); % this is not perfect
 end
 
+names = fieldnames(cond); 
+names = names(1:numOfTissue);
+
 if showAll
     allMaskShow = masks.img;
     allMaskShow(gel.img>0) = numOfTissue + 1;
@@ -85,9 +88,25 @@ worldCoord = (hdrInfo.v2w*voxCoord')';
 % do the 3D rendering in world space, to avoid confusion in left-right;
 % sliceshow below is still in voxel space though
 node(:,1:3) = worldCoord(:,1:3);
+if  numOfTissue ~= 6 % HARDCODED
+    if sum(contains(tis,'white'))>0; wmId = find(contains(names,'white'));
+    elseif sum(contains(tis,'wm'))>0; wmId = find(contains(names,'wm'));
+    elseif ~exist('wm','var'); wmId = input('Please Indicate the Tissue Index of the Gray Matter:'); 
+    end
+else
+    wmId = 1; % HARDCODED for ROAST Default
+end
+if  numOfTissue ~= 6 % HARDCODED
+    if sum(contains(tis,'gray'))>0; gmId = find(contains(names,'gray'));
+    elseif sum(contains(tis,'gm'))>0; gmId = find(contains(names,'gm'));
+    elseif ~exist('gm','var'); gmId = input('Please Indicate the Tissue Index of the Gray Matter:'); 
+    end
+else
+    gmId = 2; % HARDCODED for ROAST Default
+end
 
-indNode_grayFace = face(find(face(:,4) == 2),1:3);
-indNode_grayElm = elem(find(elem(:,5) == 2),1:4);
+indNode_grayFace = face(find(face(:,4) == gmId),1:3);
+indNode_grayElm = elem(find(elem(:,5) == gmId),1:4);
 
 % node(:,1:3) = sms(node(:,1:3),indNode_grayFace);
 % % smooth the surface that's to be displayed
@@ -231,7 +250,7 @@ end
 
 disp('generating slice views...');
 
-brain = (allMask==1 | allMask==2);
+brain = (allMask==wmId | allMask==gmId);
 nan_mask_brain = nan(size(brain));
 nan_mask_brain(find(brain)) = 1;
 
