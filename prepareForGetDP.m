@@ -12,10 +12,10 @@ if isempty(dirname), dirname = pwd; end
 
 % node = node + 0.5; already done right after mesh
 
-% indNode_elecElm = elem(find(elem(:,5) == 8),1:4);
+% indNode_elecElm = elem(find(elem(:,5) == 12),1:4);
 % X = zeros(size(indNode_elecElm,1),3);
 % for e = 1:size(indNode_elecElm,1), X(e,:) = mean ( node(indNode_elecElm(e,:),1:3) ); end
-% % figure; plot3(X(:,1),X(:,2),X(:,3),'r.');
+% figure; plot3(X(:,1),X(:,2),X(:,3),'r.');
 % 
 % Xt = round(X);
 % label_elec = volume_elecLabel(sub2ind(size(volume_elecLabel),Xt(:,1),Xt(:,2),Xt(:,3)));
@@ -70,8 +70,8 @@ for i=1:numOfElec
         error(['Electrode ' elecNeeded{i} ' was not meshed properly. Reasons may be: 1) electrode size is too small so the mesher cannot capture it; 2) mesh resolution is not high enough. Consider using bigger electrodes or increasing the mesh resolution by specifying the mesh options.']);
     end
     
-    [faces_gel,verts_gel] = freeBoundary(TriRep(indNode_gelElm,node(:,1:3)));
-    [faces_elec,verts_elec] = freeBoundary(TriRep(indNode_elecElm,node(:,1:3)));
+    [faces_gel,verts_gel] = freeBoundary(triangulation(indNode_gelElm,node(:,1:3)));
+    [faces_elec,verts_elec] = freeBoundary(triangulation(indNode_elecElm,node(:,1:3)));
     
     [~,iE,iG] = intersect(verts_elec,verts_gel,'rows');
     tempTag = ismember(faces_elec,iE);
@@ -94,16 +94,15 @@ if ~exist([dirname filesep baseFilename '_' uniTag '_ready.msh'],'file')
     
     disp('setting up boundary conditions...');
     
-    fid_in = fopen([dirname filesep baseFilename '_' uniTag '.msh']);
-    copyfile([dirname filesep baseFilename '_' uniTag '.msh'],...
-        [dirname filesep baseFilename '_' uniTag '_ready.msh'])
-    fid_out = fopen([dirname filesep baseFilename '_' uniTag '_ready.msh'],'W');
-    
+    fid_in = fopen(fullfile(dirname,[baseFilename '_' uniTag '.msh']));
+    fid_out = fopen([dirname filesep baseFilename '_' uniTag '_ready.msh'],'w');
+
     numOfPart = length(unique(elem(:,5)));
     while ~feof(fid_in)
         s = fgetl(fid_in);
         
         if strcmp(s,'$Elements')
+            fprintf(fid_out,'%s\n',s);
             s = fgetl(fid_in);
             numOfElem = str2num(s);
             fprintf(fid_out,'%s\n',num2str(numOfElem+size(cell2mat(element_elecNeeded),1)));

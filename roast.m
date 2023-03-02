@@ -809,11 +809,23 @@ else
     
 end
 
+if (isempty(T2) && ~exist([dirname filesep baseFilenameRasRSPD '_T1orT2_masks_preCorr.nii'],'file')) ||...
+        (~isempty(T2) && ~exist([dirname filesep baseFilenameRasRSPD '_T1andT2_masks_preCorr.nii'],'file'))
+    disp('======================================================')
+    disp('     STEP 2.5 (out of 6): FIXING CSF...       ')
+    disp('======================================================')
+    fix_csf(subjRasRSPD,T2,conductivities);
+else
+    disp('======================================================')
+    disp('    CSF FIX ALREADY DONE, SKIP STEP 2.5    ')
+    disp('======================================================')
+end
+
 if ~exist([dirname filesep baseFilename '_' uniqueTag '_mask_elec.nii'],'file')
     disp('======================================================')
     disp('      STEP 3 (out of 6): ELECTRODE PLACEMENT...       ')
     disp('======================================================')
-    hdrInfo = electrodePlacement(subj,subjRasRSPD,T2,elecName,options,uniqueTag);
+    hdrInfo = electrodePlacement(subj,subjRasRSPD,T2,elecName,conductivities,options,uniqueTag);
 else
     disp('======================================================')
     disp('         ELECTRODE ALREADY PLACED, SKIP STEP 3        ')
