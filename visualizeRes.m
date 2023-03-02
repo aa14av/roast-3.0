@@ -89,16 +89,16 @@ worldCoord = (hdrInfo.v2w*voxCoord')';
 % sliceshow below is still in voxel space though
 node(:,1:3) = worldCoord(:,1:3);
 if  numOfTissue ~= 6 % HARDCODED
-    if sum(contains(tis,'white'))>0; wmId = find(contains(names,'white'));
-    elseif sum(contains(tis,'wm'))>0; wmId = find(contains(names,'wm'));
+    if sum(contains(names,'white'))>0; wmId = find(contains(names,'white'));
+    elseif sum(contains(names,'wm'))>0; wmId = find(contains(names,'wm'));
     elseif ~exist('wm','var'); wmId = input('Please Indicate the Tissue Index of the Gray Matter:'); 
     end
 else
     wmId = 1; % HARDCODED for ROAST Default
 end
 if  numOfTissue ~= 6 % HARDCODED
-    if sum(contains(tis,'gray'))>0; gmId = find(contains(names,'gray'));
-    elseif sum(contains(tis,'gm'))>0; gmId = find(contains(names,'gm'));
+    if sum(contains(names,'gray'))>0; gmId = find(contains(names,'gray'));
+    elseif sum(contains(names,'gm'))>0; gmId = find(contains(names,'gm'));
     elseif ~exist('gm','var'); gmId = input('Please Indicate the Tissue Index of the Gray Matter:'); 
     end
 else
