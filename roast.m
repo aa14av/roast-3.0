@@ -867,13 +867,13 @@ if any(~strcmpi(recipe,'leadfield'))
         disp('STEP 6 (final step): SAVING AND VISUALIZING RESULTS...')
         disp('======================================================')
         [vol_all,ef_mag,ef_all] = postGetDP(subj,subjRasRSPD,numOfTissue,node,conductivities,hdrInfo,uniqueTag,[],[]);
-        visualizeRes(subj,subjRasRSPD,T2,node,elem,face,injectCurrent,hdrInfo,uniqueTag,0,vol_all,ef_mag,ef_all);
+        visualizeRes(subj,subjRasRSPD,T2,node,elem,face,injectCurrent,conductivities,hdrInfo,uniqueTag,0,vol_all,ef_mag,ef_all);
     else
         disp('======================================================')
         disp('  ALL STEPS DONE, LOADING RESULTS FOR VISUALIZATION   ')
         disp('======================================================')
         load([dirname filesep baseFilename '_' uniqueTag '_roastResult.mat'],'vol_all','ef_mag','ef_all');
-        visualizeRes(subj,subjRasRSPD,T2,node,elem,face,injectCurrent,hdrInfo,uniqueTag,1,vol_all,ef_mag,ef_all);
+        visualizeRes(subj,subjRasRSPD,T2,node,elem,face,injectCurrent,conductivities,hdrInfo,uniqueTag,1,vol_all,ef_mag,ef_all);
     end
     
 else
