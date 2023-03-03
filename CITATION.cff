@@ -5,7 +5,15 @@
 title: "ROAST: Realistic vOlumetric-Approach-based Simulator for Transcranial electric stimulation"
 abstract: "A simulator for TES"
 authors:
-  - name: "Huang, Y", "Datta, A", "Bikson, M.", "Parra, L.C."
+- family-names: "Huang"
+  given-names: "Yu"
+  orcid: "https://orcid.org/0000-0003-4178-0739"
+- family-names: "Datta"
+  given-names: "Abhishek"
+- family-names: "Bikson"
+  given-names: "Marom"
+- family-names: "Parra"
+  given-names: "Lucas"
 date-released: 2019-09-02
 version: "3.0"
 identifiers:
