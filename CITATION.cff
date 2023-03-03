@@ -5,7 +5,7 @@
 title: "ROAST: Realistic vOlumetric-Approach-based Simulator for Transcranial electric stimulation"
 abstract: "A simulator for TES"
 authors:
-  - name: "Yu Andy Huang"
+  - name: "Huang, Y", "Datta, A", "Bikson, M.", "Parra, L.C."
 date-released: 2019-09-02
 version: "3.0"
 identifiers:
