@@ -16,7 +16,8 @@
 % University of Florida
 % Email: aa14av@gmail.com
 % Created: 02/02/2022
-% Updated: 08/06/2022
+% Updated: 03/24/2023
+% 20230324: Replaced `cond.index` with `find` to remove dependency
 %=========================================================================================================
 function fix_csf(T1,T2,cond)
 
@@ -56,20 +57,20 @@ end
 am = load_untouch_nii(fullfile(dirname,[baseFilenameRasRSPD '_masks.nii']));
 
 masks = am.img;
-gm_mask = ismember(masks, cond.index(cellfun(@(x) sum(regexpi(x,'gm|gray|grey')),mnames,'uni',1)~=0,1)); % Get Gray Matter
-bone_mask = ismember(masks, cond.index(cellfun(@(x) sum(regexpi(x,'bone|skull|cancellous|cortical')),mnames,'uni',1)~=0,1)); % Get Combined Bone
+gm_mask = ismember(masks, find(cellfun(@(x) sum(regexpi(x,'gm|gray|grey')),mnames,'uni',1)~=0)); % Get Gray Matter
+bone_mask = ismember(masks, find(cellfun(@(x) sum(regexpi(x,'bone|skull|cancellous|cortical')),mnames,'uni',1)~=0)); % Get Combined Bone
 
 % Locate GM/bone Intersection
 dil_bone = imdilate(bone_mask,ones(3,3,3)); % Dilate bone mask
 dil_bone(bone_mask) = 0; % Dilated portion of bone mask ONLY
 
 % Replace GM touching skull with csf
-if length(cond.index(cellfun(@(x) sum(regexpi(x,'csf|cerebrospinal')),mnames,'uni',1)~=0,1))>1
+if length(find(cellfun(@(x) sum(regexpi(x,'csf|cerebrospinal')),mnames,'uni',1)~=0))>1
     error(['Loacted ', ...
-        num2str(length(cond.index(cellfun(@(x) sum(regexpi(x,'csf|cerebrospinal')),mnames,'uni',1)~=0,1))), ...
+        num2str(length(find(cellfun(@(x) sum(regexpi(x,'csf|cerebrospinal')),mnames,'uni',1)~=0))), ...
         ' csf conductivities in ''condutivities'' variable, expected 1...'])
 end
-masks(gm_mask&dil_bone) = cond.index(cellfun(@(x) sum(regexpi(x,'csf|cerebrospinal')),mnames,'uni',1)~=0,1); % Replace GM touching Bone with CSF
+masks(gm_mask&dil_bone) = find(cellfun(@(x) sum(regexpi(x,'csf|cerebrospinal')),mnames,'uni',1)~=0); % Replace GM touching Bone with CSF
 
 nii = am; nii.img = masks;
 
