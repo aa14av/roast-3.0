@@ -1,0 +1,28 @@
+# YAML 1.2
+# Metadata for citation of this software according to the CFF format (https://citation-file-format.github.io/)
+#
+---
+title: "ROAST: Realistic vOlumetric-Approach-based Simulator for Transcranial electric stimulation"
+abstract: "A simulator for TES"
+authors:
+- family-names: "Huang"
+  given-names: "Yu"
+  orcid: "https://orcid.org/0000-0003-4178-0739"
+- family-names: "Datta"
+  given-names: "Abhishek"
+- family-names: "Bikson"
+  given-names: "Marom"
+- family-names: "Parra"
+  given-names: "Lucas"
+date-released: 2019-09-02
+version: "3.0"
+identifiers:
+  - description: "This DOI represents all versions of ROAST, and will always resolve to the latest one."
+    type: doi
+    value: "10.1088/1741-2552/ab208d"
+license: "GPL-3.0"
+repository-code: "https://github.com/andypotatohy/roast"
+url: "https://www.parralab.org/roast/"
+cff-version: "1.2.0"
+message: "If you use this software, please cite it using these metadata."
+...
