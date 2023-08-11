@@ -4,25 +4,19 @@
 % University of Florida
 % Email: aa14av@gmail.com
 % Created: 02/02/2022
-% Updated: 08/08/2022
+% Updated: 08/11/2023
 %====================================================
 clear % Clear Workspace
 
 % Settings
 %--------------------------------
-rootDir = '/blue/ruogu.fang/skylastolte4444/tutorials-master/3d_segmentation/roast/subjects/';
-recipe = {'F3',-2,'F4',2};%{}; % ROAST recipe (e.g. {'F3',-2,'F4',2})
-elecType = {'pad','pad'}; % ROAST elecTypes (e.g. {'pad','pad'})
-elecSize = {[70 50 3],[70 50 3]}; % ROAST elecSizes (e.g. {[70 50 3],[70 50 3]})
-elecOri = {'lr','lr'}; % ROAST elecOris (e.g. {'lr','lr'})
-simTag = 'UNETRSeg';
-
-% 'electype', {'pad','pad'}, ...
-%                     'elecsize', {[70 50 3],[70 50 3]}, ...
-%                     'elecOri', {'lr','lr'}, ...
-%                     'conductivities',cond, ...
-%                     'T2', [], 'simulationTag', 'tDCSLAB'); 
-
+rootDir = 'directory containing individual subject folder(s)';
+recipe = {}; % ROAST recipe (e.g. {'F3',-2,'F4',2})
+elecType = {}; % ROAST elecTypes (e.g. {'pad','pad'})
+elecSize = {}; % ROAST elecSizes (e.g. {[70 50 3],[70 50 3]})
+elecOri = {}; % ROAST elecOris (e.g. {'lr','lr'})
+simTag = 'unique tag for ROAST output file(s)';
+condFile = 'absolute path to conductivity mat file'; 
 %--------------------------------
 
 % Locate Subject Folders
@@ -31,15 +25,12 @@ subnames = {subfdr.name}';
 
 tic
 missing = ones(length(subnames),1); % Pre-allocate
-for s = 19:length(subnames)
-    subDir = fullfile(rootDir,subnames{s},'ROAST_Output_UNETR');
-    T1 = fullfile(rootDir,subnames{s}, strcat(subnames{s},'_T1_flirt.nii')); %'absolute path to T1 nifti file';
-    condFile = '/blue/ruogu.fang/skylastolte4444/tutorials-master/3d_segmentation/roast/cond_11tis.mat'; %'absolute path to conductivity mat file';
-    segFile = fullfile(rootDir,subnames{s}, strcat(subnames{s},'_unetr.nii')); %'absolute path to segmentation nifti file';
+for s = 1:length(subnames)
+    subDir = fullfile(rootDir,subnames{s},'ROAST_Output');
+    T1 = 'absolute path to T1 nifti file'; % /path/to/subject/dir/T1.nii
+    segFile = 'absolute path to segmentation nifti file'; % /path/to/subject/dir/T1_segmented_labels.nii
     if ~exist(subDir,'dir'); mkdir(subDir); end % Create Output Folder 
-    baseFilename = subnames{s};
-    condFilename = condFile;
-
+    
     if ~exist(fullfile(subDir,[baseFilename '_' simTag '_Jbrain.nii']),'file') % Check if ROAST is already completed
         c = load(condFilename,'cond');
         cond = cell2struct(c.cond(:,4),c.cond(:,3)); % convert to struct for ROAST
@@ -71,20 +62,20 @@ for s = 19:length(subnames)
         end
         
         % Run ROAST with specified settings (no need for T2 with manual seg)
-        %try
-        roast(subnames{s}, fullfile(subDir,'T1.nii') ,recipe, ...
-            'electype', elecType, ...
-            'elecsize', elecSize, ...
-            'elecOri', elecOri, ...
-            'conductivities',cond, ...
-            'T2', [], 'simulationTag', simTag);
-         missing(s) = 0; % ROAST Complete
-         disp([subnames{s} ' Complete !']); % lmk when finished
-         close all; % Close ROAST figures
-        %catch ME
-        %    delete(fullfile(subDir,'*')); % START OVER
-        %    warning(ME.message); % Print ROAST fail error
-        %end
+        try
+            roast(fullfile(subDir,'T1.nii') ,recipe, ...
+                'electype', elecType, ...
+                'elecsize', elecSize, ...
+                'elecOri', elecOri, ...
+                'conductivities',cond, ...
+                'T2', [], 'simulationTag', simTag);
+             missing(s) = 0; % ROAST Complete
+             disp([subnames{s} ' Complete !']); % lmk when finished
+             close all; % Close ROAST figures
+        catch ME
+            delete(fullfile(subDir,'*')); % START OVER
+            warning(ME.message); % Print ROAST fail error
+        end
         
     else
         missing(s) = 0; % ROAST already complete 
