@@ -83,18 +83,19 @@ end
 scalp_surface = mask2EdgePointCloud(scalp,'erode',ones(3,3,3));
 
 %% fit cap position on the individual's head
+rootDir = fileparts(mfilename('fullpath'));
 if ~isempty(indP)
    switch lower(elecPara(1).capType)
        case {'1020','1010','1005'}
-           load('./cap1005FullWithExtra.mat','capInfo');
+           load(fullfile(rootDir,'cap1005FullWithExtra.mat'),'capInfo');
            isBiosemi = 0;
            isEGI = 0;
        case 'biosemi'
-           load('./capBioSemiFullWithExtra.mat','capInfo');
+           load(fullfile(rootDir,'capBioSemiFullWithExtra.mat'),'capInfo');
            isBiosemi = 1;
            isEGI = 0;
        case 'egi'
-           load('./capEGIfull.mat','capInfo');
+           load(fullfile(rootDir,'capEGIfull.mat'),'capInfo');
            isBiosemi = 0;
            isEGI = 1;
    end

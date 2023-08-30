@@ -12,15 +12,17 @@ doNeck = 0;
 doCustom = 0;
 unknownElec = 0;
 
+rootDir = fileparts(mfilename('fullpath'));
+
 switch lower(para(1).capType)
     case {'1020','1010','1005'}
-        load('./cap1005FullWithExtra.mat','capInfo');
+        load(fullfile(rootDir,'cap1005FullWithExtra.mat'),'capInfo');
         elecPool_P = capInfo{1};
     case 'biosemi'
-        load('./capBioSemiFullWithExtra.mat','capInfo');
+        load(fullfile(rootDir,'capBioSemiFullWithExtra.mat'),'capInfo');
         elecPool_P = capInfo{1};
     case 'egi'
-        load('./capEGIfull.mat','capInfo');
+        load(fullfile(rootDir,'capEGIfull.mat'),'capInfo');
         elecPool_P = capInfo{1};
 end
 

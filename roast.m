@@ -427,7 +427,7 @@ end
 
 if ~exist('T2','var')
     T2 = [];
-else
+elseif ~isempty(T2)
     if ~exist(T2,'file'), error(['The T2 MRI you provided ' T2 ' does not exist.']); end
     
     t2Data = load_untouch_nii(T2);

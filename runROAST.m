@@ -16,11 +16,12 @@ elecType = {}; % ROAST elecTypes (e.g. {'pad','pad'})
 elecSize = {}; % ROAST elecSizes (e.g. {[70 50 3],[70 50 3]})
 elecOri = {}; % ROAST elecOris (e.g. {'lr','lr'})
 simTag = 'unique tag for ROAST output file(s)';
-condFile = 'absolute path to conductivity mat file'; 
 %--------------------------------
 
+getCond('numTissues',6,'simTag',simTag)
+
 % Locate Subject Folders
-subfdr = dir(fullfile(rootDir,'sub*'));
+subfdr = dir(fullfile(rootDir,'sub*')); % folders that begin with 'sub'
 subnames = {subfdr.name}';
 
 tic

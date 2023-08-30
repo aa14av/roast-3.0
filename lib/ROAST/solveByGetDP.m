@@ -197,7 +197,7 @@ fprintf(fid,'%s\n','}');
 fclose(fid);
 
 str = computer('arch');
-filepath = fullfile(fileparts(mfilename('fullpath')),'lib','getdp-3.2.0','bin');
+filepath = fullfile(fileparts(fileparts(mfilename('fullpath'))),'getdp-3.2.0','bin');
 switch str
     case 'win64'
 %         solverPath = 'lib\getdp-3.2.0\bin\getdp.exe';
