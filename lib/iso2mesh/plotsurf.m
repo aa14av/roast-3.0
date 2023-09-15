@@ -31,6 +31,13 @@ function hm=plotsurf(node,face,varargin)
 %
 
 rngstate = rand ('state');
+ax = [];
+for ii = 1:length(varargin)-1
+    if strcmp(varargin{ii}, 'Parent')
+        ax = varargin{ii+1};
+        break;
+    end
+end
 
 if(nargin>=2)
   randseed=hex2dec('623F9A9E'); % "U+623F U+9A9E"
@@ -64,7 +71,7 @@ if(nargin>=2)
             end
         end
     end
-    hold on;
+    hold(ax,'on');
 	h=[];
     newlen=length(newsurf);
 
@@ -86,13 +93,13 @@ if(nargin>=2)
     if(size(face,2)==4)
         tag=face(:,4);
 		types=unique(tag);
-        hold on;
+        hold(ax,'on');
 		h=[];
 	    for i=1:length(types)
             if(size(node,2)==3)
-                h=[h plotasurf(node,face(tag==types(i),1:3),'facecolor',rand(3,1),varargin{:})];
+                h=[h plotasurf(node,face(tag==types(i),1:3),'facecolor',rand(3,1),varargin{:})]; 
             else
-                h=[h plotasurf(node,face(tag==types(i),1:3),varargin{:})];
+                h=[h plotasurf(node,face(tag==types(i),1:3),varargin{:})]; 
             end
         end
     else
@@ -101,9 +108,9 @@ if(nargin>=2)
   end
 end    
 if(~isempty(h)) 
-  axis equal;
-  if(all(get(gca,'view')==[0 90]))
-      view(3);
+  axis(ax,'equal');
+  if(all(get(ax,'view')==[0 90]))
+      view(ax,3);
   end
 end
 if(~isempty(h) && nargout>=1)

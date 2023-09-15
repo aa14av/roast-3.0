@@ -413,14 +413,12 @@ if any(~strcmpi(recipe,'leadfield'))
     
 else
     
-    fid = fopen(fullfile(fileparts(mfilename('fullpath')), ...
-        'lib','ROAST','elec72.loc')); 
-    C = textscan(fid,'%d %f %f %s'); fclose(fid);
+    fid = fopen('./elec72.loc'); C = textscan(fid,'%d %f %f %s'); fclose(fid);
     elecName = C{4}; for i=1:length(elecName), elecName{i} = strrep(elecName{i},'.',''); end
     capType = '1010';
     elecType = 'disc';
     elecSize = [6 2];
-    elecOri = []; 
+    elecOri = [];
     
     elecPara = struct('capType',capType,'elecType',elecType,...
         'elecSize',elecSize,'elecOri',elecOri);
@@ -869,13 +867,13 @@ if any(~strcmpi(recipe,'leadfield'))
         disp('STEP 6 (final step): SAVING AND VISUALIZING RESULTS...')
         disp('======================================================')
         [vol_all,ef_mag,ef_all] = postGetDP(subj,subjRasRSPD,numOfTissue,node,conductivities,hdrInfo,uniqueTag,[],[]);
-        visualizeRes(subj,subjRasRSPD,T2,node,elem,face,injectCurrent,conductivities,hdrInfo,uniqueTag,0,vol_all,ef_mag,ef_all);
+%         visualizeRes(subj,subjRasRSPD,T2,node,elem,face,injectCurrent,conductivities,hdrInfo,uniqueTag,0,vol_all,ef_mag,ef_all);
     else
         disp('======================================================')
         disp('  ALL STEPS DONE, LOADING RESULTS FOR VISUALIZATION   ')
         disp('======================================================')
         load([dirname filesep baseFilename '_' uniqueTag '_roastResult.mat'],'vol_all','ef_mag','ef_all');
-        visualizeRes(subj,subjRasRSPD,T2,node,elem,face,injectCurrent,conductivities,hdrInfo,uniqueTag,1,vol_all,ef_mag,ef_all);
+%         visualizeRes(subj,subjRasRSPD,T2,node,elem,face,injectCurrent,conductivities,hdrInfo,uniqueTag,1,vol_all,ef_mag,ef_all);
     end
     
 else
@@ -885,7 +883,7 @@ else
         disp('    STEP 5 (out of 6): GENERATING THE LEAD FIELD...   ')
         disp('           NOTE THIS WILL TAKE SOME TIME...           ')
         disp('======================================================')
-        prepareForGetDP(subj,node,elem,elecName,numOfTissue,uniqueTag);
+        prepareForGetDP(subj,node,elem,elecName,uniqueTag);
         injectCurrent = ones(length(elecName),1); % 1 mA at each candidate electrode
         injectCurrent(indRef) = -1;
         for i=1:length(indStimElec)
@@ -894,7 +892,7 @@ else
                 disp(['SOLVING FOR ELECTRODE ' num2str(i) ' OUT OF ' num2str(length(indStimElec)) ' ...']);
                 fprintf('======================================================\n\n');
                 indElecSolve = [indStimElec(i) indRef];
-                solveByGetDP(subj,injectCurrent,numOfTissue,conductivities,indElecSolve,uniqueTag,num2str(indStimElec(i)));
+                solveByGetDP(subj,injectCurrent,conductivities,indElecSolve,uniqueTag,num2str(indStimElec(i)));
             else
                 disp(['ELECTRODE ' num2str(i) ' HAS BEEN SOLVED, SKIPPING...']);
             end
