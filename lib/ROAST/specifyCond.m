@@ -61,19 +61,24 @@ if(nargin > 3)
             case 'tissues'; handles.tId = varargin{index+1};
         end
     end
-end
-def = {'white', 0.126;
+    tbl = cell(length(handles.tId),4); 
+    tbl(:,1) = mat2cell(handles.tId,ones(length(handles.tId),1));
+    tbl(:,2) = mat2cell(zeros(length(handles.tId),1),ones(length(handles.tId),1));
+    tbl(:,4) = mat2cell(zeros(length(handles.tId),1),ones(length(handles.tId),1));
+else
+    def = {'white', 0.126;
     'gray', 0.276;
     'csf', 1.65;
     'bone', 0.01;
     'skin', 0.465;
     'air', 2.5e-14};
-tbl = cell(length(handles.tId),4); 
-tbl(:,1) = mat2cell(handles.tId,ones(length(handles.tId),1));
-tbl(:,2) = mat2cell(zeros(length(handles.tId),1),ones(length(handles.tId),1));
-if ~exist(fullfile(fileparts(mfilename('fullpath')),'custom_conductivities.mat'),'file')
-    if length(handles.tId) >= 6; tbl(1:6,3:4) = def; end
-else
+    handles.tId = (1:6)';
+    tbl = cell(length(handles.tId),4); 
+    tbl(:,1) = mat2cell(handles.tId,ones(length(handles.tId),1));
+    tbl(:,2) = mat2cell([1 1 0 0 0 0]',ones(length(handles.tId),1));
+    tbl(1:6,3:4) = def;
+end
+if exist(fullfile(fileparts(mfilename('fullpath')),'custom_conductivities.mat'),'file')
     c = load(fullfile(fileparts(mfilename('fullpath')),'custom_conductivities.mat'));
     if length(handles.tId) == length(c.cond)
         tbl(:,2:4) = c.cond(:,2:4);

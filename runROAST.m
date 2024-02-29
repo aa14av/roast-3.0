@@ -10,15 +10,16 @@ clear % Clear Workspace
 
 % Settings
 %--------------------------------
-rootDir = 'directory containing individual subject folder(s)';
-recipe = {}; % ROAST recipe (e.g. {'F3',-2,'F4',2})
-elecType = {}; % ROAST elecTypes (e.g. {'pad','pad'})
-elecSize = {}; % ROAST elecSizes (e.g. {[70 50 3],[70 50 3]})
-elecOri = {}; % ROAST elecOris (e.g. {'lr','lr'})
-simTag = 'unique tag for ROAST output file(s)';
+rootDir = '/blue/camctrp/working/Alejandro/ACT';
+recipe = {'F3',-2,'F4',2};
+elecType = {'pad','pad'};
+elecSize = {[70 50 3],[70 50 3]};
+elecOri = {'lr','lr'};
+simTag = 'tDCSLAB';
 %--------------------------------
 
-getCond('numTissues',6,'simTag',simTag)
+getCond('numTissues',11,'simTag',simTag)
+% load cond_11tis.mat
 
 % Locate Subject Folders
 subfdr = dir(fullfile(rootDir,'sub*')); % folders that begin with 'sub'
@@ -27,18 +28,18 @@ subnames = {subfdr.name}';
 tic
 missing = ones(length(subnames),1); % Pre-allocate
 for s = 1:length(subnames)
-    subDir = fullfile(rootDir,subnames{s},'ROAST_Output');
-    T1 = 'absolute path to T1 nifti file'; % /path/to/subject/dir/T1.nii
-    segFile = 'absolute path to segmentation nifti file'; % /path/to/subject/dir/T1_segmented_labels.nii
+    subDir = fullfile(rootDir,subnames{s},'ROAST_11tis_Output_II');
+    T1 = fullfile(subDir,'T1.nii'); % /path/to/subject/dir/T1.nii
+    segFile = fullfile(subDir,'T1_T1orT2_masks.nii'); % /path/to/subject/dir/T1_segmented_labels.nii
     if ~exist(subDir,'dir'); mkdir(subDir); end % Create Output Folder 
     
-    if ~exist(fullfile(subDir,[baseFilename '_' simTag '_Jbrain.nii']),'file') % Check if ROAST is already completed
-        c = load(condFilename,'cond');
-        cond = cell2struct(c.cond(:,4),c.cond(:,3)); % convert to struct for ROAST
-        cond.gel = 1;                                                                   % HARDCODED GEL CONDUCTIVITY
-        cond.electrode = 2.5e7;                                                         % HARDCODED ELEC CONDUCTIVITY
-        cond.index = cell2mat(c.cond(:,1)); % Get Unique Tissue Indexes
-        cond.brain = cell2mat(c.cond(:,2)); % Boolean Index of Brain vs Non-brain
+%     if ~exist(fullfile(subDir,['T1_' simTag '_Jbrain.nii']),'file') % Check if ROAST is already completed
+%         c = load(condFilename,'cond');
+%         cond = cell2struct(c.cond(:,4),c.cond(:,3)); % convert to struct for ROAST
+%         cond.gel = 1;                                                                   % HARDCODED GEL CONDUCTIVITY
+%         cond.electrode = 2.5e7;                                                         % HARDCODED ELEC CONDUCTIVITY
+%         cond.index = cell2mat(c.cond(:,1)); % Get Unique Tissue Indexes
+%         cond.brain = cell2mat(c.cond(:,2)); % Boolean Index of Brain vs Non-brain
 
         % Repeat Gel Conductivity for each electrode
         if length(cond.gel(:))==1
@@ -64,7 +65,7 @@ for s = 1:length(subnames)
         
         % Run ROAST with specified settings (no need for T2 with manual seg)
         try
-            roast(fullfile(subDir,'T1.nii') ,recipe, ...
+            roast(s,fullfile(subDir,'T1.nii') ,recipe, ...
                 'electype', elecType, ...
                 'elecsize', elecSize, ...
                 'elecOri', elecOri, ...
@@ -78,9 +79,9 @@ for s = 1:length(subnames)
             warning(ME.message); % Print ROAST fail error
         end
         
-    else
-        missing(s) = 0; % ROAST already complete 
-    end
+%     else
+%         missing(s) = 0; % ROAST already complete 
+%     end
     
 end
 toc
