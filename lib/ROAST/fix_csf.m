@@ -16,7 +16,7 @@
 % University of Florida
 % Email: aa14av@gmail.com
 % Created: 02/02/2022
-% Updated: 03/24/2023
+% Updated: 03/07/2024
 % 20230324: Replaced `cond.index` with `find` to remove dependency
 %=========================================================================================================
 function fix_csf(T1,T2,cond)
@@ -58,6 +58,7 @@ am = load_untouch_nii(fullfile(dirname,[baseFilenameRasRSPD '_masks.nii']));
 
 masks = am.img;
 gm_mask = ismember(masks, find(cellfun(@(x) sum(regexpi(x,'gm|gray|grey')),mnames,'uni',1)~=0)); % Get Gray Matter
+wm_mask = ismember(masks, find(cellfun(@(x) sum(regexpi(x,'wm|white')),mnames,'uni',1)~=0)); % Get White Matter
 bone_mask = ismember(masks, find(cellfun(@(x) sum(regexpi(x,'bone|skull|cancellous|cortical')),mnames,'uni',1)~=0)); % Get Combined Bone
 
 % Locate GM/bone Intersection
@@ -71,6 +72,7 @@ if length(find(cellfun(@(x) sum(regexpi(x,'csf|cerebrospinal')),mnames,'uni',1)~
         ' csf conductivities in ''condutivities'' variable, expected 1...'])
 end
 masks(gm_mask&dil_bone) = find(cellfun(@(x) sum(regexpi(x,'csf|cerebrospinal')),mnames,'uni',1)~=0); % Replace GM touching Bone with CSF
+masks(wm_mask&dil_bone) = find(cellfun(@(x) sum(regexpi(x,'csf|cerebrospinal')),mnames,'uni',1)~=0); % Replace WM touching Bone with CSF
 
 nii = am; nii.img = masks;
 
